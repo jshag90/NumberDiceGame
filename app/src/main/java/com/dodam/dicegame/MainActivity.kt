@@ -239,7 +239,7 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text("주사위 합: $rolledSum", style = MaterialTheme.typography.bodyLarge)
-                if (targetNumber > 6 && rollCount > 0) {
+                if (targetNumber >= 1 && rollCount > 0) {
                     Text("목표 숫자: $targetNumber")
                     if (targetNumber == rolledSum) {
                         Text("목표 숫자와 일치! 🎉", color = Color.Green)
@@ -350,7 +350,7 @@ class MainActivity : ComponentActivity() {
         Image(
             painter = rememberAsyncImagePainter(
                 ImageRequest.Builder(context).data(data = drawableId).apply(block = {
-                    size(Size.ORIGINAL)
+                    size(Size(600, 600)) // 원하는 가로와 세로 크기 (px 단위)
                 }).build(), imageLoader = imageLoader
             ),
             contentDescription = null,
@@ -408,11 +408,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Dice(value: Int) {
         Box(
-            modifier = Modifier
-                .size(100.dp)
-                .background(Color.White)
-                // .border(0.dp, Color.Black)
-                .padding(8.dp),
+            modifier = Modifier.size(100.dp),
             contentAlignment = Alignment.Center
         ) {
             DiceFace(value)
@@ -422,13 +418,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Dice(value: Int, modifier: Modifier = Modifier) {
         Box(
-            modifier = modifier
-                .size(100.dp) // 주사위 크기
-                .background(Color.White)
-                .padding(8.dp),
+            modifier = modifier.size(100.dp),
             contentAlignment = Alignment.Center
         ) {
-            // 주사위 얼굴을 그리는 컴포저블
             DiceFace(value)
         }
     }
