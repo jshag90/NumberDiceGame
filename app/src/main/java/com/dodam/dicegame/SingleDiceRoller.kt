@@ -50,6 +50,8 @@ fun DiceRoller() {
     var targetNumber by remember { mutableStateOf(21) }
     var rollCount by remember { mutableStateOf(0) }
 
+    val tipFontSize = if (Build.MODEL.contains("S23", ignoreCase = true)) 14.sp else 15.sp
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
@@ -253,7 +255,16 @@ fun DiceRoller() {
                 }
 
             }else{
-                Text("Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.")
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(), // 가로 방향 전체를 채움
+                    horizontalArrangement = Arrangement.Center // 좌우 중앙 정렬
+                ) {
+                    Text(
+                        text = "Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.",
+                        fontSize = tipFontSize,
+                    )
+                }
             }
         }
     }
