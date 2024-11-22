@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     .weight(1f), // 남은 공간을 채움
                 verticalArrangement = Arrangement.Center
             ) {
-                DiceRoller()
+                MultlDiceRoller()
             }
         }
     }
