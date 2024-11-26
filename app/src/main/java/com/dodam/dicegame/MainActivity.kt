@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     .weight(1f), // 남은 공간을 채움
                 verticalArrangement = Arrangement.Center
             ) {
-                MultlDiceRoller()
+                DiceRoller()
             }
         }
     }
@@ -163,8 +163,15 @@ class MainActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("같이하기 화면", style = MaterialTheme.typography.titleLarge)
+               /* Spacer(modifier = Modifier.height(16.dp))
+                Text("같이하기 화면", style = MaterialTheme.typography.titleLarge)*/
+
+                RoomActionsScreen(
+                    onCreateRoomClick = { println("방 만들기 클릭") },
+                    onPrivateRoomClick = { println("비공개 방 입장 클릭") },
+                    onPublicRoomClick = { println("공개 방 입장 클릭") }
+                )
+
             }
         }
     }
