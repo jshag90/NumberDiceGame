@@ -2,6 +2,7 @@ package com.dodam.dicegame
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -9,7 +10,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -66,6 +66,13 @@ class MainActivity : ComponentActivity() {
             }
             composable("multi_play") {
                 MultiPlayScreen(navController)
+            }
+            composable("game_room/{targetNumber}/{numDice}/{isPublic}/{entryCode}") { backStackEntry ->
+                val targetNumber = backStackEntry.arguments?.getString("targetNumber") ?: ""
+                val numDice = backStackEntry.arguments?.getString("numDice") ?: ""
+                val isPublic = backStackEntry.arguments?.getString("isPublic") ?: ""
+                val entryCode = backStackEntry.arguments?.getString("entryCode") ?: ""
+                MultiDiceRoller(targetNumber, numDice, isPublic, entryCode)
             }
         }
     }
@@ -163,10 +170,8 @@ class MainActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-               /* Spacer(modifier = Modifier.height(16.dp))
-                Text("같이하기 화면", style = MaterialTheme.typography.titleLarge)*/
-
                 RoomActionsScreen(
+                    navController,
                     onCreateRoomClick = { println("방 만들기 클릭") },
                     onPrivateRoomClick = { println("비공개 방 입장 클릭") },
                     onPublicRoomClick = { println("공개 방 입장 클릭") }
