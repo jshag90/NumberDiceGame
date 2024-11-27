@@ -109,7 +109,7 @@ fun RoomActionsScreen(
                 navController.navigate(
                     "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText"
                 )
-                onCreateRoomClick() // 방 생성 로직 추가 가능
+                onCreateRoomClick() // TODO 방생성 api 요청
             }
         )
     }
