@@ -24,13 +24,14 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CreateRoomModal(
-                    onDismiss: () -> Unit,
-                    onConfirm: (goalNumber: Int, diceCount: Int, isPublic: Boolean, entryCode: String) -> Unit
+    onDismiss: () -> Unit,
+    onConfirm: (goalNumber: Int, diceCount: Int, isPublic: Boolean, entryCode: String, nickname: String) -> Unit
 ) {
-    var goalNumber by remember { mutableStateOf("21") }  // 기본값 21
-    var diceCount by remember { mutableStateOf("1") }    // 기본값 1개
-    var isPublic by remember { mutableStateOf(true) }     // 기본값 공개
+    var goalNumber by remember { mutableStateOf("21") } // 기본값 21
+    var diceCount by remember { mutableStateOf("1") } // 기본값 1개
+    var isPublic by remember { mutableStateOf(true) } // 기본값 공개
     var entryCode by remember { mutableStateOf("") }
+    var nickname by remember { mutableStateOf("") } // 닉네임 추가
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -39,12 +40,11 @@ fun CreateRoomModal(
                 val targetNumber = goalNumber.toIntOrNull() ?: 21
                 val numDice = diceCount.toIntOrNull() ?: 1
                 val code = if (isPublic) "-1" else entryCode // 공개일 때 기본값 적용
-                println("Button clicked: goal=$targetNumber, dice=$numDice, isPublic=$isPublic, entryCode=$code") // 디버그
-                onConfirm(targetNumber, numDice, isPublic, code)
+                val userNickname = nickname.ifBlank { "익명" } // 빈 닉네임일 경우 기본값 설정
+                onConfirm(targetNumber, numDice, isPublic, code, userNickname)
             }) {
                 Text("만들기")
             }
-
         },
         dismissButton = {
             TextButton(onClick = { onDismiss() }) {
@@ -54,6 +54,12 @@ fun CreateRoomModal(
         title = { Text("방 만들기") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = nickname,
+                    onValueChange = { nickname = it },
+                    label = { Text("닉네임") },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 OutlinedTextField(
                     value = goalNumber,
                     onValueChange = { goalNumber = it },
@@ -109,3 +115,4 @@ fun CreateRoomModal(
         }
     )
 }
+

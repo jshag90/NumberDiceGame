@@ -102,12 +102,12 @@ fun RoomActionsScreen(
     if (showModal) {
         CreateRoomModal(
             onDismiss = { showModal = false },
-            onConfirm = { targetNumber, numDice, isPublic, entryCode ->
+            onConfirm = { targetNumber, numDice, isPublic, entryCode, userNickname ->
                 showModal = false
                 val isPublicText = if (isPublic) "true" else " false"
                 val entryCodeText = entryCode.ifBlank { "-1" }
                 navController.navigate(
-                    "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText"
+                    "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname"
                 )
                 onCreateRoomClick() // TODO 방생성 api 요청
             }

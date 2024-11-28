@@ -67,12 +67,13 @@ class MainActivity : ComponentActivity() {
             composable("multi_play") {
                 MultiPlayScreen(navController)
             }
-            composable("game_room/{targetNumber}/{numDice}/{isPublic}/{entryCode}") { backStackEntry ->
+            composable("game_room/{targetNumber}/{numDice}/{isPublic}/{entryCode}/{userNickname}") { backStackEntry ->
                 val targetNumber = backStackEntry.arguments?.getString("targetNumber") ?: ""
                 val numDice = backStackEntry.arguments?.getString("numDice") ?: ""
                 val isPublic = backStackEntry.arguments?.getString("isPublic") ?: ""
                 val entryCode = backStackEntry.arguments?.getString("entryCode") ?: ""
-                MultiDiceRoller(targetNumber, numDice, isPublic, entryCode)
+                val userNickname = backStackEntry.arguments?.getString("userNickname") ?: "익명"
+                MultiDiceRoller(targetNumber, numDice, isPublic, entryCode, userNickname, navController)
             }
         }
     }
