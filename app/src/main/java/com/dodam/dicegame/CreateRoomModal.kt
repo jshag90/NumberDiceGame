@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -25,13 +27,15 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CreateRoomModal(
     onDismiss: () -> Unit,
-    onConfirm: (goalNumber: Int, diceCount: Int, isPublic: Boolean, entryCode: String, nickname: String) -> Unit
+    onConfirm: (goalNumber: Int, diceCount: Int, isPublic: Boolean, entryCode: String, nickname: String, maxPlayers: Int) -> Unit
 ) {
     var goalNumber by remember { mutableStateOf("21") } // 기본값 21
     var diceCount by remember { mutableStateOf("1") } // 기본값 1개
     var isPublic by remember { mutableStateOf(true) } // 기본값 공개
     var entryCode by remember { mutableStateOf("") }
     var nickname by remember { mutableStateOf("") } // 닉네임 추가
+    var maxPlayers by remember { mutableStateOf(2) } // 기본값 2명
+    var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -41,7 +45,7 @@ fun CreateRoomModal(
                 val numDice = diceCount.toIntOrNull() ?: 1
                 val code = if (isPublic) "-1" else entryCode // 공개일 때 기본값 적용
                 val userNickname = nickname.ifBlank { "익명" } // 빈 닉네임일 경우 기본값 설정
-                onConfirm(targetNumber, numDice, isPublic, code, userNickname)
+                onConfirm(targetNumber, numDice, isPublic, code, userNickname, maxPlayers)
             }) {
                 Text("만들기")
             }
@@ -97,8 +101,10 @@ fun CreateRoomModal(
                     )
                     Text(
                         "비공개",
-                        modifier = Modifier
-                            .clickable { isPublic = false }
+                        modifier = Modifier.clickable {
+                            isPublic = false
+                            entryCode = ""
+                        }
                     )
                 }
 
@@ -111,8 +117,32 @@ fun CreateRoomModal(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+                // DropdownMenu로 인원 선택
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = true }
+                        .padding(8.dp)
+                ) {
+                    Text("최대 인원: $maxPlayers 명", modifier = Modifier.weight(1f))
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        (2..10).forEach { playerCount ->
+                            DropdownMenuItem(
+                                text = { Text("$playerCount 명") },
+                                onClick = {
+                                    maxPlayers = playerCount
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
     )
 }
-

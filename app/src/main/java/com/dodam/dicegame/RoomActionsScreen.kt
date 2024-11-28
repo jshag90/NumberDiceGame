@@ -1,5 +1,6 @@
 package com.dodam.dicegame
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +27,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.dodam.dicegame.api.createRoomWithOkHttp
+import com.dodam.dicegame.vo.RoomInfoVO
+import com.dodam.dicegame.vo.RoomType
 
 @Composable
 fun RoomActionsScreen(
@@ -102,14 +105,30 @@ fun RoomActionsScreen(
     if (showModal) {
         CreateRoomModal(
             onDismiss = { showModal = false },
-            onConfirm = { targetNumber, numDice, isPublic, entryCode, userNickname ->
+            onConfirm = { targetNumber, numDice, isPublic, entryCode, userNickname, maxPlayers ->
                 showModal = false
                 val isPublicText = if (isPublic) "true" else " false"
                 val entryCodeText = entryCode.ifBlank { "-1" }
                 navController.navigate(
-                    "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname"
+                    "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers"
                 )
-                onCreateRoomClick() // TODO 방생성 api 요청
+
+                val roomInfo = RoomInfoVO(
+                    maxPlayers = maxPlayers,
+                    targetNumber = targetNumber,
+                    diceCount = numDice,
+                    roomType = if (isPublic) RoomType.PUBLIC else RoomType.SECRET,
+                    entryCode = if (isPublic) "" else entryCode,
+                    nickName = userNickname
+                )
+
+                createRoomWithOkHttp(roomInfo) { roomId ->
+                    if (roomId != null) {
+                        Log.d("OkHttp", "Room created with ID: $roomId")
+                    } else {
+                        Log.e("OkHttp", "Failed to create room")
+                    }
+                }
             }
         )
     }

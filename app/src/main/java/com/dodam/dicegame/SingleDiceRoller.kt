@@ -1,5 +1,6 @@
 package com.dodam.dicegame
 
+import android.media.MediaPlayer
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,9 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dodam.dicegame.component.displayDiceBlackJackTip
+import com.dodam.dicegame.component.displayDiceRollResult
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
@@ -50,7 +55,19 @@ fun DiceRoller() {
     var targetNumber by remember { mutableStateOf(21) }
     var rollCount by remember { mutableStateOf(0) }
 
-    val tipFontSize = if (Build.MODEL.contains("S23", ignoreCase = true)) 14.sp else 15.sp
+    //주사위 소리 재생
+    val context = LocalContext.current
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    LaunchedEffect(isRolling) {
+        if (isRolling) {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer.create(context, R.raw.dice_sound)
+            mediaPlayer?.start()
+            mediaPlayer?.setOnCompletionListener {
+                it.release()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -232,40 +249,12 @@ fun DiceRoller() {
 
             Spacer(modifier = Modifier.height(13.dp))
 
+            if (targetNumber >= 1 && rollCount > 0)
+                displayDiceRollResult(targetNumber, rolledSum, rollCount)
+            if (targetNumber < 1 || rollCount <= 0)
+                displayDiceBlackJackTip()
 
-            if (targetNumber >= 1 && rollCount > 0) {
 
-                if (targetNumber == rolledSum) {
-                    Text("목표 숫자와 일치! 🎉", color = Color.Green)
-                    Text("주사위를 ${rollCount}번 만에 목표 숫자와 일치했어요!")
-                }
-
-                if (targetNumber < rolledSum) {
-                    Text(
-                        text = "목표 숫자 맞추기에 실패하였습니다! \uD83D\uDC80",
-                        color = Color(0xFFB00020)
-                    )
-                }
-
-                if (targetNumber > rolledSum) {
-                    Text(
-                        text = "아직 목표 숫자에 도달하지 못했습니다. 😅",
-                        color = Color.Blue
-                    )
-                }
-
-            }else{
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(), // 가로 방향 전체를 채움
-                    horizontalArrangement = Arrangement.Center // 좌우 중앙 정렬
-                ) {
-                    Text(
-                        text = "Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.",
-                        fontSize = tipFontSize,
-                    )
-                }
-            }
         }
     }
 }
