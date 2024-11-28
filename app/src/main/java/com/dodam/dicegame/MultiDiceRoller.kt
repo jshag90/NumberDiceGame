@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,6 +47,7 @@ fun MultiDiceRoller(
     entryCode: String,
     userNickname: String,
     maxPlayer: String,
+    roomId : String,
     navController: NavController
 ) {
     var diceValues by remember { mutableStateOf(List(numDice.toIntOrNull() ?: 1) { 1 }) }
@@ -79,7 +81,7 @@ fun MultiDiceRoller(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // 상단에 뒤로가기 버튼과 닉네임 표시
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -87,21 +89,35 @@ fun MultiDiceRoller(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 뒤로가기 버튼
-            IconButton(onClick = {navController.popBackStack()}) {
+            IconButton(onClick = { navController.popBackStack() }) {
                 androidx.compose.material3.Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
                     contentDescription = "뒤로가기",
                     tint = Color.Black
                 )
             }
+
+            Spacer(modifier = Modifier.width(16.dp)) // 뒤로가기 버튼과 닉네임 사이의 간격
+
             // 닉네임 텍스트
             Text(
-                text = "$userNickname 님", // 닉네임에 "님" 붙이기
+                text = "$userNickname 님",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.weight(1f)) // 닉네임과 방번호 사이의 간격을 자동으로 채움
+
+            // 방번호 텍스트
+            Text(
+                text = "방번호 : $roomId",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
         }
+
 
         Box(
             modifier = Modifier

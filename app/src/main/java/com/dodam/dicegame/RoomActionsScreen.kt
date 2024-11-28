@@ -27,9 +27,13 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.dodam.dicegame.api.createRoomWithOkHttp
+import com.dodam.dicegame.api.createRoomWithOkHttpSync
 import com.dodam.dicegame.vo.RoomInfoVO
 import com.dodam.dicegame.vo.RoomType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RoomActionsScreen(
@@ -55,7 +59,7 @@ fun RoomActionsScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .height(40.dp),
-          /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),*/
+            /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),*/
             shape = RectangleShape
         ) {
             Icon(Icons.Filled.Add, contentDescription = "방 만들기", tint = Color.White)
@@ -72,7 +76,7 @@ fun RoomActionsScreen(
                 .fillMaxWidth()
                 .weight(1f) // 세로로 1/3 공간을 차지
                 .height(40.dp), // 버튼 세로 크기 절반으로 설정
-         /*   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC5)),*/ // Teal
+            /*   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC5)),*/ // Teal
             shape = RectangleShape // 각진 모양으로 설정
         ) {
             Icon(Icons.Filled.Lock, contentDescription = "비공개 방 입장", tint = Color.White)
@@ -89,7 +93,7 @@ fun RoomActionsScreen(
                 .fillMaxWidth()
                 .weight(1f) // 세로로 1/3 공간을 차지
                 .height(40.dp), // 버튼 세로 크기 절반으로 설정
-          /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),*/ // Orange
+            /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),*/ // Orange
             shape = RectangleShape // 각진 모양으로 설정
         ) {
             Icon(Icons.Filled.Face, contentDescription = "공개 방 입장", tint = Color.White)
@@ -109,9 +113,6 @@ fun RoomActionsScreen(
                 showModal = false
                 val isPublicText = if (isPublic) "true" else " false"
                 val entryCodeText = entryCode.ifBlank { "-1" }
-                navController.navigate(
-                    "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers"
-                )
 
                 val roomInfo = RoomInfoVO(
                     maxPlayers = maxPlayers,
@@ -122,13 +123,22 @@ fun RoomActionsScreen(
                     nickName = userNickname
                 )
 
-                createRoomWithOkHttp(roomInfo) { roomId ->
-                    if (roomId != null) {
-                        Log.d("OkHttp", "Room created with ID: $roomId")
-                    } else {
-                        Log.e("OkHttp", "Failed to create room")
+                // 비동기 방식으로 roomId를 받아오고 나서 navigate 호출
+                CoroutineScope(Dispatchers.IO).launch {
+                    val roomId = createRoomWithOkHttpSync(roomInfo)
+
+                    withContext(Dispatchers.Main) {
+                        if (roomId != null) {
+                            // 네비게이션 호출
+                            navController.navigate(
+                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId.toString()}"
+                            )
+                        } else {
+                            Log.e("CreateRoom", "Failed to create room. roomId is null.")
+                        }
                     }
                 }
+
             }
         )
     }
