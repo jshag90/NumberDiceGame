@@ -41,7 +41,7 @@ fun CreateRoomModal(
     var isPublic by remember { mutableStateOf(true) } // 기본값 공개
     var entryCode by remember { mutableStateOf("") }
     var nickname by remember { mutableStateOf("") } // 닉네임 추가
-    var maxPlayers by remember { mutableStateOf(2) } // 기본값 2명
+    var maxPlayers by remember { mutableStateOf(5) } // 기본값 2명
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
     AlertDialog(
@@ -161,7 +161,6 @@ fun CreateRoomModal(
                         }
                     }
                 }
-
 
 
             }
