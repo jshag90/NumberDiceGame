@@ -28,8 +28,9 @@ fun createRoomWithOkHttpSync(roomInfo: RoomInfoVO): Long? {
     val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
 
     // 요청 객체 생성
+    val url = "http://152.67.209.165:9081/dicegame/room/create"
     val request = Request.Builder()
-        .url("http://192.168.0.20:8080/room/create") // API 엔드포인트
+        .url(url) // API 엔드포인트
         .post(requestBody)
         .build()
 
