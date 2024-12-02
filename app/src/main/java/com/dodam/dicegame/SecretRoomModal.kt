@@ -1,5 +1,6 @@
 package com.dodam.dicegame
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,20 +14,40 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SecretRoomModal(
     onDismiss: () -> Unit,
-    onConfirm: (roomNumber: String, entryCode: String) -> Unit
+    onConfirm: (roomNumber: String, entryCode: String, nickName: String) -> Unit
 ) {
     var roomNumber by remember { mutableStateOf("") }
     var entryCode by remember { mutableStateOf("") }
+    var nickName by remember { mutableStateOf("") }
+    val context = LocalContext.current // Toast를 표시하기 위해 Context 필요
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
         confirmButton = {
-            TextButton(onClick = { onConfirm(roomNumber, entryCode) }) {
+            TextButton(
+                onClick = {
+                    when {
+                        roomNumber.isBlank() -> {
+                            Toast.makeText(context, "방번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        entryCode.isBlank() -> {
+                            Toast.makeText(context, "입장 코드를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        nickName.isBlank() -> {
+                            Toast.makeText(context, "닉네임을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            onConfirm(roomNumber, entryCode, nickName)
+                        }
+                    }
+                }
+            ) {
                 Text("확인")
             }
         },
@@ -48,6 +69,12 @@ fun SecretRoomModal(
                     value = entryCode,
                     onValueChange = { entryCode = it },
                     label = { Text("입장 코드") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = nickName,
+                    onValueChange = { nickName = it },
+                    label = { Text("닉네임") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

@@ -1,6 +1,7 @@
 package com.dodam.dicegame
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -146,19 +148,15 @@ fun RoomActionsScreen(
     if (showSecretRoomModal) {
         SecretRoomModal(
             onDismiss = { showSecretRoomModal = false },
-            onConfirm = { roomNumber, entryCode ->
-                showSecretRoomModal = false
-
-                // 입력값 검증 및 로직 처리
-                if (roomNumber.isNotBlank() && entryCode.isNotBlank()) {
-                    onPrivateRoomClick() // 비공개방 입장 로직 호출
-                } else {
-                    // 잘못된 입력값 처리 로직 (필요 시 추가)
-                    println("방번호나 입장코드가 비어있습니다!")
+            onConfirm = { roomNumber, entryCode, nickName ->
+                if (roomNumber.isNotBlank() && entryCode.isNotBlank() && nickName.isNotBlank()) {
+                    showSecretRoomModal = false
+                    onPrivateRoomClick() // 비공개 방 입장 로직 호출
                 }
             }
         )
     }
+
 
 }
 
