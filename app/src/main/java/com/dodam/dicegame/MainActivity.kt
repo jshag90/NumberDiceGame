@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
     fun AppNavigation(navController: NavHostController) {
         NavHost(
             navController = navController,
-            startDestination = "single_play" // 기본 화면
+            startDestination = "multi_play" // 기본 화면
         ) {
             composable("single_play") {
                 SinglePlayScreen(navController)
