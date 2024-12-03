@@ -1,4 +1,6 @@
+import android.app.AlertDialog
 import android.content.Context
+import android.widget.EditText
 import android.widget.Toast
 import com.dodam.dicegame.api.executeRequest
 import com.dodam.dicegame.api.fromJson
@@ -51,7 +53,7 @@ fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context): RoomPlayer
     // returnCode가 -5일 때 처리
     if (returnCodeVO.returnCode == -5) {
         CoroutineScope(Dispatchers.Main).launch {
-            Toast.makeText(context, "이미 해당 닉네임을 사용하는 사용자가 존재합니다. 닉네임을 변경해주세요.", Toast.LENGTH_SHORT).show()
+            showNicknameChangeModal(context)
         }
         return returnCodeVO.data
     }
@@ -59,3 +61,28 @@ fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context): RoomPlayer
     // RoomData 반환
     return returnCodeVO.data
 }
+
+fun showNicknameChangeModal(context: Context) {
+    val editText = EditText(context).apply {
+        hint = "새로운 닉네임을 입력하세요."
+    }
+
+    val dialog = AlertDialog.Builder(context)
+        .setMessage("해당 닉네임을 사용하는 사용자가 존재합니다.")
+        .setCancelable(false)
+        .setView(editText)  // Directly adding EditText to the dialog
+        .setPositiveButton("변경") { _, _ ->
+            val newNickName = editText.text.toString()
+            if (newNickName.isNotEmpty()) {
+                // Call API to update the nickname
+                //updateNicknameAndJoinRoom(newNickName, currentNickName, context)
+            } else {
+                Toast.makeText(context, "닉네임을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
+        .setNegativeButton("취소") { dialog, _ -> dialog.dismiss() }
+        .create()
+
+    dialog.show()
+}
+
