@@ -1,6 +1,8 @@
 package com.dodam.dicegame.api
 
 import android.util.Log
+import com.dodam.dicegame.vo.ReturnCodeVO
+import com.google.gson.Gson
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.MediaType.Companion.toMediaType
@@ -10,6 +12,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.IOException
+import com.google.gson.reflect.TypeToken
 
 
 private val moshi: Moshi = Moshi.Builder()
@@ -45,13 +48,17 @@ fun <T> toJson(obj: T, clazz: Class<T>): String {
     return adapter.toJson(obj)
 }
 
-// 공통 JSON 파싱 함수
-fun <T> fromJson(json: String?, clazz: Class<T>): T? {
+
+inline fun <reified T> fromJson(json: String?): ReturnCodeVO<T>? {
     return try {
-        val adapter = moshi.adapter(clazz)
-        adapter.fromJson(json ?: "")
+        val type = object : TypeToken<ReturnCodeVO<T>>() {}.type
+        Gson().fromJson<ReturnCodeVO<T>>(json, type)
     } catch (e: Exception) {
-        Log.e("OkHttp", "Failed to parse JSON: ${e.message}")
+        Log.e("Gson", "Failed to parse JSON: ${e.message}, JSON: $json")
         null
     }
 }
+
+
+
+

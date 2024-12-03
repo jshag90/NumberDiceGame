@@ -45,6 +45,7 @@ fun RoomActionsScreen(
     onPublicRoomClick: () -> Unit
 ) {
 
+    val context = LocalContext.current // 현재 Context를 가져옵니다.
     var showModal by remember { mutableStateOf(false) }
     var showSecretRoomModal by remember { mutableStateOf(false) }
 
@@ -127,7 +128,7 @@ fun RoomActionsScreen(
 
                 // 비동기 방식으로 roomId를 받아오고 나서 navigate 호출
                 CoroutineScope(Dispatchers.IO).launch {
-                    val roomId = createRoomWithOkHttpSync(roomInfo)
+                    val roomId = createRoomWithOkHttpSync(roomInfo, context)
 
                     withContext(Dispatchers.Main) {
                         if (roomId != null) {

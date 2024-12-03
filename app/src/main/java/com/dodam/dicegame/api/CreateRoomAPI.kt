@@ -1,10 +1,13 @@
 package com.dodam.dicegame.api
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import com.dodam.dicegame.vo.ReturnCodeVO
 import com.dodam.dicegame.vo.RoomInfoVO
 import okhttp3.Request
 
-fun createRoomWithOkHttpSync(roomInfo: RoomInfoVO): Long? {
+fun createRoomWithOkHttpSync(roomInfo: RoomInfoVO, context: Context): Long? {
     val url = "http://152.67.209.165:9081/dicegame/room/create"
     val jsonBody = toJson(roomInfo, RoomInfoVO::class.java)
     val requestBody = createRequestBody(jsonBody)
@@ -14,10 +17,13 @@ fun createRoomWithOkHttpSync(roomInfo: RoomInfoVO): Long? {
         .build()
 
     val responseBody = executeRequest(request)
-    return responseBody?.toLongOrNull()?.also {
-        Log.d("OkHttp", "Room created successfully with ID: $it")
-    } ?: run {
-        Log.e("OkHttp", "Failed to create room or parse room ID")
-        null
+    val returnCodeVO: ReturnCodeVO<Long>? = fromJson(responseBody)
+    if (returnCodeVO?.returnCode != 0) {
+        Toast.makeText(context, "서버에 문제가 발생했습니다. 관리자에게 문의하세요.", Toast.LENGTH_SHORT).show()
+        return null
     }
+
+    return returnCodeVO.data //방번호
+
 }
+
