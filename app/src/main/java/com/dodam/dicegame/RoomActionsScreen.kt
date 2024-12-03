@@ -1,7 +1,7 @@
 package com.dodam.dicegame
 
+import com.dodam.dicegame.dto.RoomPlayerDto
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +32,7 @@ import androidx.navigation.NavHostController
 import com.dodam.dicegame.api.createRoomWithOkHttpSync
 import com.dodam.dicegame.vo.RoomInfoVO
 import com.dodam.dicegame.vo.RoomType
+import joinPublicRoomWithOkHttpSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,8 +47,10 @@ fun RoomActionsScreen(
 ) {
 
     val context = LocalContext.current // 현재 Context를 가져옵니다.
-    var showModal by remember { mutableStateOf(false) }
+    var showCreateRoomModal by remember { mutableStateOf(false) }
     var showSecretRoomModal by remember { mutableStateOf(false) }
+    var showPublicRoomModal by remember { mutableStateOf(false) }
+
 
 
     Column(
@@ -57,7 +60,7 @@ fun RoomActionsScreen(
         verticalArrangement = Arrangement.spacedBy(30.dp) // 버튼 간 마진 10dp
     ) {
         Button(
-            onClick = { showModal = true }, // Show modal on button click
+            onClick = { showCreateRoomModal = true }, // Show modal on button click
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -91,7 +94,7 @@ fun RoomActionsScreen(
             )
         }
         Button(
-            onClick = onPublicRoomClick,
+            onClick = { showPublicRoomModal = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f) // 세로로 1/3 공간을 차지
@@ -109,11 +112,11 @@ fun RoomActionsScreen(
         }
     }
 
-    if (showModal) {
+    if (showCreateRoomModal) {
         CreateRoomModal(
-            onDismiss = { showModal = false },
+            onDismiss = { showCreateRoomModal = false },
             onConfirm = { targetNumber, numDice, isPublic, entryCode, userNickname, maxPlayers ->
-                showModal = false
+                showCreateRoomModal = false
                 val isPublicText = if (isPublic) "true" else " false"
                 val entryCodeText = entryCode.ifBlank { "-1" }
 
@@ -132,7 +135,6 @@ fun RoomActionsScreen(
 
                     withContext(Dispatchers.Main) {
                         if (roomId != null) {
-                            // 네비게이션 호출
                             navController.navigate(
                                 "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId.toString()}"
                             )
@@ -158,9 +160,37 @@ fun RoomActionsScreen(
         )
     }
 
+    if (showPublicRoomModal) {
+        PublicRoomModal(
+            onDismiss = { showPublicRoomModal = false },
+            onConfirm = { nickName ->
+                if (nickName.isNotBlank()) {
+                    showPublicRoomModal = false
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val roomPlayerDto = joinPublicRoomWithOkHttpSync(nickName, context)
+
+                        withContext(Dispatchers.Main) {
+                            if (roomPlayerDto != null) {
+                                navController.navigate(
+                                    "game_room/${roomPlayerDto.targetNumber}" +
+                                                  "/${roomPlayerDto.diceCount}/true/-1" +
+                                                  "/${roomPlayerDto.nickName}" +
+                                                  "/${roomPlayerDto.maxPlayers}" +
+                                                  "/${roomPlayerDto.roomId}"
+                                )
+                            } else {
+                                Log.e("CreateRoom", "Failed to create room. roomId is null.")
+                            }
+                        }
+                    }
+
+
+                    onPrivateRoomClick() // 공개 방 입장 로직 호출
+                }
+            }
+        )
+    }
+
 
 }
-
-
-
-

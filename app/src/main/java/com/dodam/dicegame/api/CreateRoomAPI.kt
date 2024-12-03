@@ -1,7 +1,6 @@
 package com.dodam.dicegame.api
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.dodam.dicegame.vo.ReturnCodeVO
 import com.dodam.dicegame.vo.RoomInfoVO
