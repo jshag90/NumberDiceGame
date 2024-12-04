@@ -7,7 +7,7 @@ import com.dodam.dicegame.vo.RoomInfoVO
 import okhttp3.Request
 
 fun createRoomWithOkHttpSync(roomInfo: RoomInfoVO, context: Context): Long? {
-    val url = "http://152.67.209.165:9081/dicegame/room/create"
+    val url = "$serverUrl/room/create"
     val jsonBody = toJson(roomInfo, RoomInfoVO::class.java)
     val requestBody = createRequestBody(jsonBody)
     val request = Request.Builder()

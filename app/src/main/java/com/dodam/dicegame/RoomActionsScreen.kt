@@ -168,7 +168,7 @@ fun RoomActionsScreen(
                     showPublicRoomModal = false
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        val roomPlayerDto = joinPublicRoomWithOkHttpSync(nickName, context)
+                        val roomPlayerDto = joinPublicRoomWithOkHttpSync(nickName, context, navController, RoomPlayerDto(0,0,0,0,0,""))
 
                         withContext(Dispatchers.Main) {
                             if (roomPlayerDto != null) {
