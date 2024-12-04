@@ -56,10 +56,21 @@ fun updateNickNameWithOkHttpAsync(
                         }
                     }
 
+                    -5 ->{
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "다른 플레이어가 사용하는 닉네임입니다.", Toast.LENGTH_SHORT).show()
+                            showNicknameChangeModal(
+                                context,
+                                playerId.toInt(),
+                                navController,
+                                roomPlayerDto
+                            )
+                        }
+                    }
+
                     -6 -> {
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "동일한 닉네임으로 변경할 수 없습니다.", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(context, "동일한 닉네임으로 변경할 수 없습니다.", Toast.LENGTH_SHORT).show()
                             showNicknameChangeModal(
                                 context,
                                 playerId.toInt(),

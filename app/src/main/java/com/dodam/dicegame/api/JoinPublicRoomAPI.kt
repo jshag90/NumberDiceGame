@@ -10,7 +10,6 @@ import com.dodam.dicegame.api.serverUrl
 import com.dodam.dicegame.api.updateNickNameWithOkHttpAsync
 import com.dodam.dicegame.dto.RoomPlayerDto
 import com.dodam.dicegame.vo.ReturnCodeVO
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,19 +61,25 @@ fun showNicknameChangeModal(
     roomPlayerDto: RoomPlayerDto
 ) {
     val editText = EditText(context).apply {
-        hint = "닉네임이 이미 존재합니다. 새로운 닉네임을 입력해주세요."
-        textSize = 14f
+        setPadding(16, 8, 16, 8) // 내부 여백 설정
     }
 
-    val layoutParams = LinearLayout.LayoutParams(
-        LinearLayout.LayoutParams.MATCH_PARENT,
-        LinearLayout.LayoutParams.WRAP_CONTENT
-    )
-    editText.layoutParams = layoutParams
+    val container = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(52, 26, 52, 16)
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = android.view.Gravity.CENTER
+        }
+        addView(editText)
+    }
 
     val dialog = AlertDialog.Builder(context)
+        .setMessage("닉네임이 이미 존재합니다.\n새로운 닉네임을 입력해주세요.")
         .setCancelable(false)
-        .setView(editText) // Set the EditText directly in the dialog
+        .setView(container) // Set the EditText directly in the dialog
         .setPositiveButton("변경") { _, _ ->
             val newNickName = editText.text.toString()
             if (newNickName.isNotEmpty()) {
