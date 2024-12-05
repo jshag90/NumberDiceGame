@@ -48,7 +48,7 @@ fun MultiDiceRoller(
     entryCode: String,
     userNickname: String,
     maxPlayer: String,
-    roomId : String,
+    roomId: String,
     isRoomMaster: String,
     navController: NavController
 ) {
@@ -64,7 +64,6 @@ fun MultiDiceRoller(
 
     val isRollingButtonEnabled = rolledSum < parsedTargetNumber
     var isGameStarted by remember { mutableStateOf(false) }
-
 
     //주사위 소리 재생
     val context = LocalContext.current
@@ -140,7 +139,6 @@ fun MultiDiceRoller(
             }
         }
 
-
         Box(
             modifier = Modifier
                 .weight(1f) // 상단 영역을 스크롤 가능한 공간으로 설정
@@ -196,7 +194,7 @@ fun MultiDiceRoller(
                 // 버튼이 숨겨짐
             }
 
-
+            // 게임 시작 버튼을 누른 후에는 굴리기 버튼과 STOP 버튼을 활성화시킴
             Spacer(modifier = Modifier.height(13.dp))
 
             Text(
@@ -228,7 +226,7 @@ fun MultiDiceRoller(
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
                 colors = ButtonDefaults.buttonColors(Color.Red),
-                enabled = isRollingButtonEnabled
+                enabled = isRoomMaster=="true" && isGameStarted && !isRolling // 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
                 Text("굴리기(${rollCount}회)")
             }
@@ -241,7 +239,8 @@ fun MultiDiceRoller(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
-                colors = ButtonDefaults.buttonColors(Color.Blue)
+                colors = ButtonDefaults.buttonColors(Color.Blue),
+                enabled = isRoomMaster=="true" && isGameStarted && !isRolling // 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
                 Text("STOP")
             }
@@ -252,7 +251,7 @@ fun MultiDiceRoller(
                 displayDiceRollResult(parsedTargetNumber, rolledSum, rollCount)
             if (rollCount < 1)
                 displayDiceBlackJackTip()
-
         }
     }
 }
+
