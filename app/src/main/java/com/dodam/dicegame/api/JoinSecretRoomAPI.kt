@@ -1,12 +1,14 @@
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.navigation.NavController
+import com.dodam.dicegame.api.HttpHeaders
+import com.dodam.dicegame.api.HttpHeadersValue
 import com.dodam.dicegame.api.createRequestBody
 import com.dodam.dicegame.api.executeRequest
 import com.dodam.dicegame.api.fromJson
 import com.dodam.dicegame.api.serverUrl
 import com.dodam.dicegame.api.toJson
+import com.dodam.dicegame.component.showNicknameChangeModal
 import com.dodam.dicegame.dto.RoomPlayerDto
 import com.dodam.dicegame.vo.ReturnCodeVO
 import com.dodam.dicegame.vo.RoomJoinVO
@@ -27,8 +29,8 @@ fun joinSecretRoomWithOkHttpSync(
     val request = Request.Builder()
         .url(url)
         .post(requestBody)
-        .addHeader("accept", "*/*")
-        .addHeader("Content-Type", "application/json")
+        .addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE)
+        .addHeader(HttpHeaders.CONTENT_TYPE, HttpHeadersValue.CONTENT_TYPE_VALUE)
         .build()
 
     val responseBody = executeRequest(request)

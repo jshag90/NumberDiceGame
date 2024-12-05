@@ -49,6 +49,7 @@ fun MultiDiceRoller(
     userNickname: String,
     maxPlayer: String,
     roomId : String,
+    isRoomMaster: String,
     navController: NavController
 ) {
     var diceValues by remember { mutableStateOf(List(numDice.toIntOrNull() ?: 1) { 1 }) }
@@ -62,6 +63,7 @@ fun MultiDiceRoller(
     var isRolling by remember { mutableStateOf(false) }
 
     val isRollingButtonEnabled = rolledSum < parsedTargetNumber
+    var isGameStarted by remember { mutableStateOf(false) }
 
 
     //주사위 소리 재생
@@ -120,8 +122,6 @@ fun MultiDiceRoller(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-                Log.d("TEST_isPublic:", isPublic)
-                Log.d("entryCode:", entryCode)
                 if (isPublic == "false") {
                     Text(
                         text = "입장코드 : $entryCode",
@@ -173,6 +173,32 @@ fun MultiDiceRoller(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            // 게임시작 버튼
+            if (isRoomMaster == "true" && !isGameStarted) {
+                Button(
+                    onClick = {
+                        isGameStarted = true // 게임 시작 시 버튼을 숨기기
+                    },
+                    modifier = Modifier
+                        .width(200.dp) // 크기 절반으로 설정
+                        .padding(horizontal = 13.dp),
+                ) {
+                    Text("게임시작")
+                }
+
+                Spacer(modifier = Modifier.height(13.dp))
+            }
+
+            // 게임시작 버튼이 클릭되면 숨겨짐
+            if (isGameStarted) {
+                // 게임 시작 후 버튼을 숨기기 위한 로직
+                // 버튼이 숨겨짐
+            }
+
+
+            Spacer(modifier = Modifier.height(13.dp))
+
             Text(
                 text = "$rolledSum",
                 color = Color(0xFFD32F2F), // 강조를 위한 강렬한 빨간색 (Material Design Red 700)

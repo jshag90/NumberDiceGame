@@ -48,12 +48,10 @@ fun RoomActionsScreen(
     onPublicRoomClick: () -> Unit
 ) {
 
-    val context = LocalContext.current // 현재 Context를 가져옵니다.
+    val context = LocalContext.current
     var showCreateRoomModal by remember { mutableStateOf(false) }
     var showSecretRoomModal by remember { mutableStateOf(false) }
     var showPublicRoomModal by remember { mutableStateOf(false) }
-
-
 
     Column(
         modifier = Modifier
@@ -82,9 +80,9 @@ fun RoomActionsScreen(
             onClick = { showSecretRoomModal = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // 세로로 1/3 공간을 차지
-                .height(40.dp), // 버튼 세로 크기 절반으로 설정
-            /*   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC5)),*/ // Teal
+                .weight(1f)
+                .height(40.dp),
+            /*   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC5)),*/
             shape = RectangleShape // 각진 모양으로 설정
         ) {
             Icon(Icons.Filled.Lock, contentDescription = "비공개 방 입장", tint = Color.White)
@@ -92,24 +90,24 @@ fun RoomActionsScreen(
             Text(
                 text = "비공개방",
                 color = Color.White,
-                fontSize = 34.sp // 글자 크기를 현재의 2배로 설정
+                fontSize = 34.sp
             )
         }
         Button(
             onClick = { showPublicRoomModal = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // 세로로 1/3 공간을 차지
-                .height(40.dp), // 버튼 세로 크기 절반으로 설정
-            /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),*/ // Orange
-            shape = RectangleShape // 각진 모양으로 설정
+                .weight(1f)
+                .height(40.dp),
+            /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),*/
+            shape = RectangleShape
         ) {
             Icon(Icons.Filled.Face, contentDescription = "공개 방 입장", tint = Color.White)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "공개방",
                 color = Color.White,
-                fontSize = 34.sp // 글자 크기를 현재의 2배로 설정
+                fontSize = 34.sp
             )
         }
     }
@@ -134,11 +132,10 @@ fun RoomActionsScreen(
                 // 비동기 방식으로 roomId를 받아오고 나서 navigate 호출
                 CoroutineScope(Dispatchers.IO).launch {
                     val roomId = createRoomWithOkHttpSync(roomInfo, context)
-
                     withContext(Dispatchers.Main) {
                         if (roomId != null) {
                             navController.navigate(
-                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId}"
+                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId}/true"
                             )
                         } else {
                             Log.e("방만들기", "Failed to 방만들기. roomId is null.")
@@ -172,7 +169,8 @@ fun RoomActionsScreen(
                                             "/${roomPlayerDto.diceCount}/false/${roomPlayerDto.entryCode}" +
                                             "/${roomPlayerDto.nickName}" +
                                             "/${roomPlayerDto.maxPlayer}" +
-                                            "/${roomPlayerDto.roomId}"
+                                            "/${roomPlayerDto.roomId}"+
+                                            "/false"
                                 )
                             } else {
                                 Log.e("비밀방 입장", "Failed to 비밀방 입장.")
@@ -181,7 +179,7 @@ fun RoomActionsScreen(
                     }
 
 
-                    onPrivateRoomClick() // 비공개 방 입장 로직 호출
+                    onPrivateRoomClick()
                 }
             }
         )
@@ -206,10 +204,11 @@ fun RoomActionsScreen(
                             if (roomPlayerDto != null) {
                                 navController.navigate(
                                     "game_room/${roomPlayerDto.targetNumber}" +
-                                            "/${roomPlayerDto.diceCount}/true/-1" +
-                                            "/${roomPlayerDto.nickName}" +
-                                            "/${roomPlayerDto.maxPlayer}" +
-                                            "/${roomPlayerDto.roomId}"
+                                                  "/${roomPlayerDto.diceCount}/true/-1" +
+                                                  "/${roomPlayerDto.nickName}" +
+                                                  "/${roomPlayerDto.maxPlayer}" +
+                                                  "/${roomPlayerDto.roomId}"+
+                                                  "/false"
                                 )
                             } else {
                                 Log.e("공개방 입장", "Failed to 공개방 입장. roomId is null.")
@@ -217,7 +216,7 @@ fun RoomActionsScreen(
                         }
                     }
 
-                    onPrivateRoomClick() // 공개 방 입장 로직 호출
+                    onPrivateRoomClick()
                 }
             }
         )

@@ -24,6 +24,16 @@ private val client: OkHttpClient = OkHttpClient()
 /*val serverUrl = "http://152.67.209.165:9081/dicegame"*/
 val serverUrl = "http://192.168.0.20:8080"
 
+object HttpHeaders {
+    const val ACCEPT = "Accept"
+    const val CONTENT_TYPE = "Content-Type"
+}
+
+object HttpHeadersValue {
+    const val ACCEPT_VALUE = "*/*"
+    const val CONTENT_TYPE_VALUE = "application/json"
+}
+
 fun createRequestBody(json: String, mediaType: String = "application/json; charset=utf-8"): RequestBody {
     return json.toRequestBody(mediaType.toMediaType())
 }

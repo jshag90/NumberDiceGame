@@ -3,6 +3,7 @@ package com.dodam.dicegame.api
 import android.content.Context
 import android.widget.Toast
 import androidx.navigation.NavController
+import com.dodam.dicegame.component.showNicknameChangeModal
 import com.dodam.dicegame.dto.RoomPlayerDto
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +12,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
-import showNicknameChangeModal
 
 fun updateNickNameWithOkHttpAsync(
     playerId: Int,

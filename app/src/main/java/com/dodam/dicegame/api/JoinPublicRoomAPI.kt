@@ -1,13 +1,12 @@
-import android.app.AlertDialog
 import android.content.Context
-import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.navigation.NavController
+import com.dodam.dicegame.api.HttpHeaders
+import com.dodam.dicegame.api.HttpHeadersValue
 import com.dodam.dicegame.api.executeRequest
 import com.dodam.dicegame.api.fromJson
 import com.dodam.dicegame.api.serverUrl
-import com.dodam.dicegame.api.updateNickNameWithOkHttpAsync
+import com.dodam.dicegame.component.showNicknameChangeModal
 import com.dodam.dicegame.dto.RoomPlayerDto
 import com.dodam.dicegame.vo.ReturnCodeVO
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +17,7 @@ import okhttp3.Request
 fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navController: NavController, roomPlayerDto: RoomPlayerDto): RoomPlayerDto? {
     val url = "$serverUrl/room/public/join/nick-name=${nickName}"
 
-    val request = Request.Builder().url(url).get().addHeader("accept", "*/*").build()
+    val request = Request.Builder().url(url).get().addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()
 
     val responseBody = executeRequest(request)
     if (responseBody == null) {
@@ -54,44 +53,5 @@ fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navControlle
     return returnCodeVO.data
 }
 
-fun showNicknameChangeModal(
-    context: Context,
-    playerId: Int,
-    navController: NavController,
-    roomPlayerDto: RoomPlayerDto
-) {
-    val editText = EditText(context).apply {
-        setPadding(16, 8, 16, 8) // 내부 여백 설정
-    }
 
-    val container = LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(52, 26, 52, 16)
-        layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            gravity = android.view.Gravity.CENTER
-        }
-        addView(editText)
-    }
-
-    val dialog = AlertDialog.Builder(context)
-        .setMessage("닉네임이 이미 존재합니다.\n새로운 닉네임을 입력해주세요.")
-        .setCancelable(false)
-        .setView(container) // Set the EditText directly in the dialog
-        .setPositiveButton("변경") { _, _ ->
-            val newNickName = editText.text.toString()
-            if (newNickName.isNotEmpty()) {
-                updateNickNameWithOkHttpAsync(playerId, newNickName, context, navController, roomPlayerDto)
-            } else {
-                showNicknameChangeModal(context, playerId, navController, roomPlayerDto)
-                Toast.makeText(context, "닉네임을 입력해주세요.", Toast.LENGTH_SHORT).show()
-            }
-        }
-        .create()
-
-    // Show the dialog
-    dialog.show()
-}
 
