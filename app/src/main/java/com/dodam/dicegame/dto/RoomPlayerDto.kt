@@ -6,6 +6,7 @@ data class RoomPlayerDto(
     val diceCount: Int,
     val playerId: Int,
     val roomId: Int,
-    val maxPlayers: Int,
-    val nickName: String
+    val maxPlayer: Int,
+    val nickName: String,
+    val entryCode: String
 )

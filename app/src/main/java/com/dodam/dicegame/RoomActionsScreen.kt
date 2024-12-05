@@ -31,8 +31,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.dodam.dicegame.api.createRoomWithOkHttpSync
 import com.dodam.dicegame.vo.RoomInfoVO
+import com.dodam.dicegame.vo.RoomJoinVO
 import com.dodam.dicegame.vo.RoomType
 import joinPublicRoomWithOkHttpSync
+import joinSecretRoomWithOkHttpSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -136,10 +138,10 @@ fun RoomActionsScreen(
                     withContext(Dispatchers.Main) {
                         if (roomId != null) {
                             navController.navigate(
-                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId.toString()}"
+                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId}"
                             )
                         } else {
-                            Log.e("CreateRoom", "Failed to create room. roomId is null.")
+                            Log.e("방만들기", "Failed to 방만들기. roomId is null.")
                         }
                     }
                 }
@@ -151,9 +153,34 @@ fun RoomActionsScreen(
     if (showSecretRoomModal) {
         SecretRoomModal(
             onDismiss = { showSecretRoomModal = false },
-            onConfirm = { roomNumber, entryCode, nickName ->
-                if (roomNumber.isNotBlank() && entryCode.isNotBlank() && nickName.isNotBlank()) {
+            onConfirm = { roomId, entryCode, nickName ->
+                if (roomId > 0L && entryCode.isNotBlank() && nickName.isNotBlank()) {
                     showSecretRoomModal = false
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val roomPlayerDto = joinSecretRoomWithOkHttpSync(
+                            RoomJoinVO(roomId, entryCode, nickName),
+                            context,
+                            navController,
+                            RoomPlayerDto(0, 0, 0, 0, 0, "", "")
+                        )
+
+                        withContext(Dispatchers.Main) {
+                            if (roomPlayerDto != null) {
+                                navController.navigate(
+                                    "game_room/${roomPlayerDto.targetNumber}" +
+                                            "/${roomPlayerDto.diceCount}/false/${roomPlayerDto.entryCode}" +
+                                            "/${roomPlayerDto.nickName}" +
+                                            "/${roomPlayerDto.maxPlayer}" +
+                                            "/${roomPlayerDto.roomId}"
+                                )
+                            } else {
+                                Log.e("비밀방 입장", "Failed to 비밀방 입장.")
+                            }
+                        }
+                    }
+
+
                     onPrivateRoomClick() // 비공개 방 입장 로직 호출
                 }
             }
@@ -168,23 +195,27 @@ fun RoomActionsScreen(
                     showPublicRoomModal = false
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        val roomPlayerDto = joinPublicRoomWithOkHttpSync(nickName, context, navController, RoomPlayerDto(0,0,0,0,0,""))
+                        val roomPlayerDto = joinPublicRoomWithOkHttpSync(
+                            nickName,
+                            context,
+                            navController,
+                            RoomPlayerDto(0, 0, 0, 0, 0, "", "")
+                        )
 
                         withContext(Dispatchers.Main) {
                             if (roomPlayerDto != null) {
                                 navController.navigate(
                                     "game_room/${roomPlayerDto.targetNumber}" +
-                                                  "/${roomPlayerDto.diceCount}/true/-1" +
-                                                  "/${roomPlayerDto.nickName}" +
-                                                  "/${roomPlayerDto.maxPlayers}" +
-                                                  "/${roomPlayerDto.roomId}"
+                                            "/${roomPlayerDto.diceCount}/true/-1" +
+                                            "/${roomPlayerDto.nickName}" +
+                                            "/${roomPlayerDto.maxPlayer}" +
+                                            "/${roomPlayerDto.roomId}"
                                 )
                             } else {
-                                Log.e("CreateRoom", "Failed to create room. roomId is null.")
+                                Log.e("공개방 입장", "Failed to 공개방 입장. roomId is null.")
                             }
                         }
                     }
-
 
                     onPrivateRoomClick() // 공개 방 입장 로직 호출
                 }

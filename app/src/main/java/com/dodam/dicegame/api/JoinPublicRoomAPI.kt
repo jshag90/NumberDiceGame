@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import okhttp3.Request
 
 fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navController: NavController, roomPlayerDto: RoomPlayerDto): RoomPlayerDto? {
-    val url = "$serverUrl/room/public/join/nick_name=${nickName}"
+    val url = "$serverUrl/room/public/join/nick-name=${nickName}"
 
     val request = Request.Builder().url(url).get().addHeader("accept", "*/*").build()
 

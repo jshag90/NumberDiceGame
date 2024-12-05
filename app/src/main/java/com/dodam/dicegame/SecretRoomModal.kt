@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SecretRoomModal(
     onDismiss: () -> Unit,
-    onConfirm: (roomNumber: String, entryCode: String, nickName: String) -> Unit
+    onConfirm: (roomId: Long, entryCode: String, nickName: String) -> Unit
 ) {
     var roomNumber by remember { mutableStateOf("") }
     var entryCode by remember { mutableStateOf("") }
@@ -43,7 +43,7 @@ fun SecretRoomModal(
                             Toast.makeText(context, "닉네임을 입력해주세요.", Toast.LENGTH_SHORT).show()
                         }
                         else -> {
-                            onConfirm(roomNumber, entryCode, nickName)
+                            onConfirm(roomNumber.toLong(), entryCode, nickName)
                         }
                     }
                 }

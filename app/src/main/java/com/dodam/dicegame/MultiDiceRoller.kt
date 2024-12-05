@@ -109,13 +109,34 @@ fun MultiDiceRoller(
 
             Spacer(modifier = Modifier.weight(1f)) // 닉네임과 방번호 사이의 간격을 자동으로 채움
 
-            // 방번호 텍스트
-            Text(
-                text = "방번호 : $roomId",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            Column(
+                horizontalAlignment = Alignment.End // Align text to the end
+            ) {
+                // Room number text
+                Text(
+                    text = "방번호 : $roomId",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                // Entry code text (only displayed if isPublic is "false")
+                if (isPublic == "false") {
+                    Text(
+                        text = "입장코드 : $entryCode",
+                        fontSize = 16.sp, // Smaller font size for entry code
+                        fontWeight = FontWeight.Normal,
+                        color = Color.Gray // Slightly lighter color for distinction
+                    )
+                }
+
+                Text(
+                    text = "최대인원 : $maxPlayer",
+                    fontSize = 16.sp, // Smaller font size for entry code
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Gray // Slightly lighter color for distinction
+                )
+            }
         }
 
 

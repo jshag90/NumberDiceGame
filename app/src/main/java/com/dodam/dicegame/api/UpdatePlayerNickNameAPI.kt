@@ -46,7 +46,7 @@ fun updateNickNameWithOkHttpAsync(
                                 "game_room/${roomPlayerDto.targetNumber}" +
                                         "/${roomPlayerDto.diceCount}/true/-1" +
                                         "/$nickName" + // Updated nickname
-                                        "/${roomPlayerDto.maxPlayers}" +
+                                        "/${roomPlayerDto.maxPlayer}" +
                                         "/${roomPlayerDto.roomId}"
                             ) {
                                 popUpTo("previous_screen_route") { inclusive = true }
