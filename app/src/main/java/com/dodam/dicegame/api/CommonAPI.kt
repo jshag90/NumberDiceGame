@@ -21,7 +21,8 @@ private val moshi: Moshi = Moshi.Builder()
 
 private val client: OkHttpClient = OkHttpClient()
 
-public val serverUrl = "http://152.67.209.165:9081/dicegame"
+/*val serverUrl = "http://152.67.209.165:9081/dicegame"*/
+val serverUrl = "http://192.168.0.20:8080"
 
 fun createRequestBody(json: String, mediaType: String = "application/json; charset=utf-8"): RequestBody {
     return json.toRequestBody(mediaType.toMediaType())

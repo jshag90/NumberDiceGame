@@ -2,6 +2,7 @@ package com.dodam.dicegame
 
 import android.media.MediaPlayer
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -119,8 +120,8 @@ fun MultiDiceRoller(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-
-                // Entry code text (only displayed if isPublic is "false")
+                Log.d("TEST_isPublic:", isPublic)
+                Log.d("entryCode:", entryCode)
                 if (isPublic == "false") {
                     Text(
                         text = "입장코드 : $entryCode",

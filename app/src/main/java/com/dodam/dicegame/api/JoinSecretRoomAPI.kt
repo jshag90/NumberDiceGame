@@ -53,9 +53,7 @@ fun joinSecretRoomWithOkHttpSync(
         }
         return null
     }
-    Log.d("TEST1 : ", returnCodeVO.returnCode.toString())
     if (returnCodeVO.returnCode == -5) {
-        Log.d("TEST2 : ", returnCodeVO.data.toString())
         CoroutineScope(Dispatchers.Main).launch {
             returnCodeVO.data?.let {
                 showNicknameChangeModal(

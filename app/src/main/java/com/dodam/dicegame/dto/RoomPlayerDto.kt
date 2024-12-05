@@ -9,4 +9,5 @@ data class RoomPlayerDto(
     val maxPlayer: Int,
     val nickName: String,
     val entryCode: String
+
 )

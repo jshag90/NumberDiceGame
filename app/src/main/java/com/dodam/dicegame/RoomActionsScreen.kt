@@ -119,7 +119,7 @@ fun RoomActionsScreen(
             onDismiss = { showCreateRoomModal = false },
             onConfirm = { targetNumber, numDice, isPublic, entryCode, userNickname, maxPlayers ->
                 showCreateRoomModal = false
-                val isPublicText = if (isPublic) "true" else " false"
+                val isPublicText = if (isPublic) "true" else "false"
                 val entryCodeText = entryCode.ifBlank { "-1" }
 
                 val roomInfo = RoomInfoVO(
