@@ -22,7 +22,8 @@ private val moshi: Moshi = Moshi.Builder()
 private val client: OkHttpClient = OkHttpClient()
 
 /*val serverUrl = "http://152.67.209.165:9081/dicegame"*/
-val serverUrl = "http://192.168.0.20:8080"
+val serverUrl = "http://192.168.0.20:8082"
+val socketServerUrl = "ws://192.168.0.20:8082/ws/room"
 
 object HttpHeaders {
     const val ACCEPT = "Accept"

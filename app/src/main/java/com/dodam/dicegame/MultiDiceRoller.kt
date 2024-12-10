@@ -1,8 +1,8 @@
 package com.dodam.dicegame
 
+import android.content.Context
 import android.media.MediaPlayer
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,8 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dodam.dicegame.api.WebSocketClient
+import com.dodam.dicegame.api.socketServerUrl
 import com.dodam.dicegame.component.displayDiceBlackJackTip
 import com.dodam.dicegame.component.displayDiceRollResult
+import com.dodam.dicegame.vo.GetRoomsCountMessageVO
+import com.dodam.dicegame.vo.JoinRoomMessageVO
+import com.dodam.dicegame.vo.StartGameMessageVO
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
@@ -62,7 +68,6 @@ fun MultiDiceRoller(
     var showGifList by remember { mutableStateOf(List(parsedNumDice) { false }) }
     var isRolling by remember { mutableStateOf(false) }
 
-    val isRollingButtonEnabled = rolledSum < parsedTargetNumber
     var isGameStarted by remember { mutableStateOf(false) }
 
     //주사위 소리 재생
@@ -78,6 +83,26 @@ fun MultiDiceRoller(
             }
         }
     }
+
+    //현재 입장인원
+    var memberCount by remember { mutableStateOf(0) }
+
+    var webSocketClient by remember { mutableStateOf<WebSocketClient?>(null) }
+    LaunchedEffect(roomId) {
+        if (webSocketClient == null) {
+            val client = WebSocketClient(context)
+            client.connect(socketServerUrl) { roomCount -> memberCount = roomCount }
+
+            val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom")
+            client.sendMessage(Gson().toJson(joinRoomMessageVO))
+
+            val getRoomsCountMessageVO = GetRoomsCountMessageVO(roomId, "getRoomsCount")
+            client.sendMessage(Gson().toJson(getRoomsCountMessageVO))
+
+            webSocketClient = client
+        }
+    }
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -136,6 +161,13 @@ fun MultiDiceRoller(
                     fontWeight = FontWeight.Normal,
                     color = Color.Gray // Slightly lighter color for distinction
                 )
+
+                Text(
+                    text = "현재입장인원 : $memberCount",
+                    fontSize = 16.sp, // Smaller font size for entry code
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Gray // Slightly lighter color for distinction
+                )
             }
         }
 
@@ -173,10 +205,15 @@ fun MultiDiceRoller(
         ) {
 
             // 게임시작 버튼
+            // 게임시작 버튼
             if (isRoomMaster == "true" && !isGameStarted) {
                 Button(
                     onClick = {
-                        isGameStarted = true // 게임 시작 시 버튼을 숨기기
+                        isGameStarted = true
+                        webSocketClient?.let { client ->
+                            val startGameMessageVO = StartGameMessageVO(roomId, "startGame")
+                            client.sendMessage(Gson().toJson(startGameMessageVO))
+                        }
                     },
                     modifier = Modifier
                         .width(200.dp) // 크기 절반으로 설정
@@ -188,10 +225,11 @@ fun MultiDiceRoller(
                 Spacer(modifier = Modifier.height(13.dp))
             }
 
+
             // 게임시작 버튼이 클릭되면 숨겨짐
             if (isGameStarted) {
-                // 게임 시작 후 버튼을 숨기기 위한 로직
-                // 버튼이 숨겨짐
+
+
             }
 
             // 게임 시작 버튼을 누른 후에는 굴리기 버튼과 STOP 버튼을 활성화시킴
@@ -254,4 +292,5 @@ fun MultiDiceRoller(
         }
     }
 }
+
 
