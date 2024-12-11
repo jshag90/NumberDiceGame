@@ -22,6 +22,7 @@ data class StartGameMessageVO(
 
 data class PlayGameMessageVO(
     val roomId: String,
+    val isGo:String,
     override val action: String
 ) : SocketMessageVO
 

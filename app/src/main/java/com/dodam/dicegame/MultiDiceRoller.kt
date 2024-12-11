@@ -272,7 +272,7 @@ fun MultiDiceRoller(
                 onClick = {
 
                     webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "playGame")
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "Y","playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
 
@@ -303,7 +303,7 @@ fun MultiDiceRoller(
                     isAllDoneRoundPlay = false
 
                     webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "playGame")
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "N","playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
 
