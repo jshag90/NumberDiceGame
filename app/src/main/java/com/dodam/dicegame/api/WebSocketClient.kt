@@ -19,9 +19,9 @@ class WebSocketClient(private val context: Context) {
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
-    fun connect(url: String, onRoomCountReceived: (Int) -> Unit) {
+    fun connect(url: String, onRoomCountReceived: (Int) -> Unit, onIsGameStartReceived: (Boolean) -> Unit, onIsAllDoneRoundPlay: (Boolean) -> Unit) {
         val request = Request.Builder().url(url).build()
-        webSocket = client.newWebSocket(request, WebSocketListenerImpl(context, onRoomCountReceived))
+        webSocket = client.newWebSocket(request, WebSocketListenerImpl(context, onRoomCountReceived, onIsGameStartReceived, onIsAllDoneRoundPlay))
     }
 
     fun sendMessage(message: String) {
@@ -33,7 +33,9 @@ class WebSocketClient(private val context: Context) {
     }
 
     private class WebSocketListenerImpl(private val context: Context,
-                                        private val onRoomCountReceived: (Int) -> Unit // room count를 업데이트하는 콜백 추가
+                                        private val onRoomCountReceived: (Int) -> Unit, // room count를 업데이트하는 콜백 추가
+        private val onIsGameStartReceived: (Boolean) -> Unit,
+        private val onIsAllDoneRoundPlay: (Boolean) -> Unit
     ) : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             super.onOpen(webSocket, response)
@@ -48,7 +50,17 @@ class WebSocketClient(private val context: Context) {
             when (responseMessageVO.action) {
                 "joinRoom" -> showToast(responseMessageVO.message)
                 "getRoomsCount" -> onRoomCountReceived(responseMessageVO.message.toInt())
-                "startGame" ->  showToast(responseMessageVO.message)
+                "startGame" -> {
+                    onIsGameStartReceived(true)
+                    showToast(responseMessageVO.message)
+                }
+                "playGame" -> {
+                    if(responseMessageVO.message.equals("done")){
+                        onIsAllDoneRoundPlay(true)
+                    }
+
+                }
+
             }
         }
 

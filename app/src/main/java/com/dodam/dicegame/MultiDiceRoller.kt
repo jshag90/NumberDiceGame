@@ -1,8 +1,8 @@
 package com.dodam.dicegame
 
-import android.content.Context
 import android.media.MediaPlayer
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +40,7 @@ import com.dodam.dicegame.component.displayDiceBlackJackTip
 import com.dodam.dicegame.component.displayDiceRollResult
 import com.dodam.dicegame.vo.GetRoomsCountMessageVO
 import com.dodam.dicegame.vo.JoinRoomMessageVO
+import com.dodam.dicegame.vo.PlayGameMessageVO
 import com.dodam.dicegame.vo.StartGameMessageVO
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
@@ -86,12 +87,21 @@ fun MultiDiceRoller(
 
     //현재 입장인원
     var memberCount by remember { mutableStateOf(0) }
-
+    var isAllDoneRoundPlay by remember { mutableStateOf(true) }
     var webSocketClient by remember { mutableStateOf<WebSocketClient?>(null) }
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
-            client.connect(socketServerUrl) { roomCount -> memberCount = roomCount }
+            client.connect(socketServerUrl,
+                { roomCount: Int ->
+                    memberCount = roomCount
+                },
+                { gameStarted: Boolean ->
+                    isGameStarted = gameStarted
+                },
+                { allDoneRoundPlay: Boolean ->
+                    isAllDoneRoundPlay = allDoneRoundPlay
+                })
 
             val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom")
             client.sendMessage(Gson().toJson(joinRoomMessageVO))
@@ -163,7 +173,7 @@ fun MultiDiceRoller(
                 )
 
                 Text(
-                    text = "현재입장인원 : $memberCount",
+                    text = "입장인원 : $memberCount",
                     fontSize = 16.sp, // Smaller font size for entry code
                     fontWeight = FontWeight.Normal,
                     color = Color.Gray // Slightly lighter color for distinction
@@ -205,18 +215,23 @@ fun MultiDiceRoller(
         ) {
 
             // 게임시작 버튼
-            // 게임시작 버튼
             if (isRoomMaster == "true" && !isGameStarted) {
+
                 Button(
                     onClick = {
-                        isGameStarted = true
+                        /*if(memberCount < 2) {
+                            Toast.makeText(context, "참가 인원이 최소 2명이 되어야 합니다.", Toast.LENGTH_SHORT)
+                                .apply { show() }
+                            return@Button
+                        }*/
+
                         webSocketClient?.let { client ->
                             val startGameMessageVO = StartGameMessageVO(roomId, "startGame")
                             client.sendMessage(Gson().toJson(startGameMessageVO))
                         }
                     },
                     modifier = Modifier
-                        .width(200.dp) // 크기 절반으로 설정
+                        .width(200.dp)
                         .padding(horizontal = 13.dp),
                 ) {
                     Text("게임시작")
@@ -226,7 +241,6 @@ fun MultiDiceRoller(
             }
 
 
-            // 게임시작 버튼이 클릭되면 숨겨짐
             if (isGameStarted) {
 
 
@@ -253,32 +267,53 @@ fun MultiDiceRoller(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+
             Button(
                 onClick = {
+
+                    webSocketClient?.let { client ->
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "playGame")
+                        client.sendMessage(Gson().toJson(playGameMessageVO))
+                    }
+
+                    isAllDoneRoundPlay = false
+
                     if (!isRolling) {
                         isRolling = true
                         rollCount++
                     }
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
                 colors = ButtonDefaults.buttonColors(Color.Red),
-                enabled = isRoomMaster=="true" && isGameStarted && !isRolling // 게임 시작 후에만 활성화, 굴릴 때는 비활성화
+                enabled = isGameStarted && !isRolling && isAllDoneRoundPlay// 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
                 Text("굴리기(${rollCount}회)")
             }
+
 
             Spacer(modifier = Modifier.height(5.dp))
 
             // Stop 버튼 추가
             Button(
-                onClick = { /* 아무 동작도 수행하지 않음 */ },
+                onClick = {
+
+                    isAllDoneRoundPlay = false
+
+                    webSocketClient?.let { client ->
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "playGame")
+                        client.sendMessage(Gson().toJson(playGameMessageVO))
+                    }
+
+
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
                 colors = ButtonDefaults.buttonColors(Color.Blue),
-                enabled = isRoomMaster=="true" && isGameStarted && !isRolling // 게임 시작 후에만 활성화, 굴릴 때는 비활성화
+                enabled = isGameStarted && !isRolling // 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
                 Text("STOP")
             }

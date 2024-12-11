@@ -20,6 +20,11 @@ data class StartGameMessageVO(
     override val action: String
 ) : SocketMessageVO
 
+data class PlayGameMessageVO(
+    val roomId: String,
+    override val action: String
+) : SocketMessageVO
+
 data class ResponseMessageVO(
     val message: String,
     override val action: String
