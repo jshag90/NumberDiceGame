@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
@@ -34,7 +35,7 @@ fun displayDiceRollResult(targetNumber: Int, rolledSum: Int, rollCount: Int) {
 }
 
 @Composable
-fun displayDiceBlackJackTip(){
+fun displayDiceBlackJackTip(tipMessage:String){
 
     val tipFontSize = if (Build.MODEL.contains("S23", ignoreCase = true)) 14.sp else 15.sp
 
@@ -43,8 +44,9 @@ fun displayDiceBlackJackTip(){
         horizontalArrangement = Arrangement.Center // 좌우 중앙 정렬
     ) {
         Text(
-            text = "Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.",
+            text = tipMessage,
             fontSize = tipFontSize,
+            modifier = Modifier.align(Alignment.CenterVertically), // 텍스트도 상하 중앙 정렬
         )
     }
 }

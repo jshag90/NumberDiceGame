@@ -2,6 +2,7 @@ package com.dodam.dicegame
 
 import android.media.MediaPlayer
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -70,6 +71,7 @@ fun MultiDiceRoller(
     var isRolling by remember { mutableStateOf(false) }
 
     var isGameStarted by remember { mutableStateOf(false) }
+    var tipMessage by remember { mutableStateOf("Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.") }
 
     //주사위 소리 재생
     val context = LocalContext.current
@@ -88,7 +90,9 @@ fun MultiDiceRoller(
     //현재 입장인원
     var memberCount by remember { mutableStateOf(0) }
     var isAllDoneRoundPlay by remember { mutableStateOf(true) }
+    var isGameEnd by remember { mutableStateOf(false) }
     var webSocketClient by remember { mutableStateOf<WebSocketClient?>(null) }
+    var isSelfStop by remember { mutableStateOf(false) }
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
@@ -99,8 +103,16 @@ fun MultiDiceRoller(
                 { gameStarted: Boolean ->
                     isGameStarted = gameStarted
                 },
-                { allDoneRoundPlay: Boolean ->
-                    isAllDoneRoundPlay = allDoneRoundPlay
+                { allDoneRoundPlay: String ->
+                   if(allDoneRoundPlay=="done"){
+                       isAllDoneRoundPlay = true;
+                   }
+
+                   if(allDoneRoundPlay=="end"){
+                       isAllDoneRoundPlay = false
+                       isGameEnd = true
+                   }
+
                 })
 
             val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom")
@@ -112,6 +124,9 @@ fun MultiDiceRoller(
             webSocketClient = client
         }
     }
+
+
+
 
 
     Column(
@@ -242,8 +257,7 @@ fun MultiDiceRoller(
 
 
             if (isGameStarted) {
-
-
+                tipMessage = "모든 플레이어가 굴리기|STOP을 결정해야지 버튼이 활성화됩니다."
             }
 
             // 게임 시작 버튼을 누른 후에는 굴리기 버튼과 STOP 버튼을 활성화시킴
@@ -262,6 +276,12 @@ fun MultiDiceRoller(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text("라운드 ${rollCount + 1}")
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text("목표 숫자: $parsedTargetNumber")
             }
 
@@ -271,12 +291,13 @@ fun MultiDiceRoller(
             Button(
                 onClick = {
 
+                    isAllDoneRoundPlay = false
+
                     webSocketClient?.let { client ->
                         val playGameMessageVO = PlayGameMessageVO(roomId, "Y","playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
 
-                    isAllDoneRoundPlay = false
 
                     if (!isRolling) {
                         isRolling = true
@@ -288,32 +309,31 @@ fun MultiDiceRoller(
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
                 colors = ButtonDefaults.buttonColors(Color.Red),
-                enabled = isGameStarted && !isRolling && isAllDoneRoundPlay// 게임 시작 후에만 활성화, 굴릴 때는 비활성화
+                enabled = isGameStarted && !isRolling && isAllDoneRoundPlay && !isSelfStop// 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
-                Text("굴리기(${rollCount}회)")
+                Text("굴리기")
             }
 
 
             Spacer(modifier = Modifier.height(5.dp))
 
             // Stop 버튼 추가
+
             Button(
                 onClick = {
-
-                    isAllDoneRoundPlay = false
 
                     webSocketClient?.let { client ->
                         val playGameMessageVO = PlayGameMessageVO(roomId, "N","playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
-
-
+                    Log.d("Stop했을때 nickName", userNickname)
+                    isSelfStop = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
                 colors = ButtonDefaults.buttonColors(Color.Blue),
-                enabled = isGameStarted && !isRolling // 게임 시작 후에만 활성화, 굴릴 때는 비활성화
+                enabled = (isGameStarted && !isRolling && isAllDoneRoundPlay && !isSelfStop)
             ) {
                 Text("STOP")
             }
@@ -321,9 +341,22 @@ fun MultiDiceRoller(
             Spacer(modifier = Modifier.height(13.dp))
 
             if (parsedTargetNumber >= 1 && rollCount > 0)
-                displayDiceRollResult(parsedTargetNumber, rolledSum, rollCount)
-            if (rollCount < 1)
-                displayDiceBlackJackTip()
+                if (parsedTargetNumber < rolledSum) {
+
+                    webSocketClient?.let { client ->
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "N","playGame")
+                        client.sendMessage(Gson().toJson(playGameMessageVO))
+                    }
+                    isSelfStop = true
+                    Log.d("Stop했을때 nickName", userNickname)
+
+                }
+                if(isGameStarted&&rollCount>0) {
+                    displayDiceRollResult(parsedTargetNumber, rolledSum, rollCount)
+                }
+            if (rollCount < 1) {
+                displayDiceBlackJackTip(tipMessage)
+            }
         }
     }
 }

@@ -54,6 +54,7 @@ fun DiceRoller() {
     var rolledSum by remember { mutableStateOf(0) }
     var targetNumber by remember { mutableStateOf(21) }
     var rollCount by remember { mutableStateOf(0) }
+    val tipMessage by remember { mutableStateOf("Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.") }
 
     //주사위 소리 재생
     val context = LocalContext.current
@@ -68,6 +69,8 @@ fun DiceRoller() {
             }
         }
     }
+
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -251,8 +254,9 @@ fun DiceRoller() {
 
             if (targetNumber >= 1 && rollCount > 0)
                 displayDiceRollResult(targetNumber, rolledSum, rollCount)
-            if (targetNumber < 1 || rollCount <= 0)
-                displayDiceBlackJackTip()
+            if (targetNumber < 1 || rollCount <= 0) {
+                displayDiceBlackJackTip(tipMessage)
+            }
 
 
         }

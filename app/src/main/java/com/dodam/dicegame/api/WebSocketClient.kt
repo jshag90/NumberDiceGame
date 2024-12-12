@@ -19,7 +19,7 @@ class WebSocketClient(private val context: Context) {
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
-    fun connect(url: String, onRoomCountReceived: (Int) -> Unit, onIsGameStartReceived: (Boolean) -> Unit, onIsAllDoneRoundPlay: (Boolean) -> Unit) {
+    fun connect(url: String, onRoomCountReceived: (Int) -> Unit, onIsGameStartReceived: (Boolean) -> Unit, onIsAllDoneRoundPlay: (String) -> Unit) {
         val request = Request.Builder().url(url).build()
         webSocket = client.newWebSocket(request, WebSocketListenerImpl(context, onRoomCountReceived, onIsGameStartReceived, onIsAllDoneRoundPlay))
     }
@@ -35,7 +35,7 @@ class WebSocketClient(private val context: Context) {
     private class WebSocketListenerImpl(private val context: Context,
                                         private val onRoomCountReceived: (Int) -> Unit, // room count를 업데이트하는 콜백 추가
         private val onIsGameStartReceived: (Boolean) -> Unit,
-        private val onIsAllDoneRoundPlay: (Boolean) -> Unit
+        private val onIsAllDoneRoundPlay: (String) -> Unit
     ) : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             super.onOpen(webSocket, response)
@@ -55,11 +55,15 @@ class WebSocketClient(private val context: Context) {
                     showToast(responseMessageVO.message)
                 }
                 "playGame" -> {
-                    if(responseMessageVO.message.equals("done")){
-                        onIsAllDoneRoundPlay(true)
+                    val message = responseMessageVO.message
+                    onIsAllDoneRoundPlay(message)
+                    if(message == "end"){
+                        showToast("모든 사용자가 STOP을 선택했습니다. 게임을 종료합니다.")
                     }
 
                 }
+
+
 
             }
         }
