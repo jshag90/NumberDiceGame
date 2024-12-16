@@ -36,12 +36,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dodam.dicegame.api.WebSocketClient
+import com.dodam.dicegame.api.saveScoreWithOkHttpAsync
 import com.dodam.dicegame.api.socketServerUrl
 import com.dodam.dicegame.component.displayDiceBlackJackTip
 import com.dodam.dicegame.component.displayDiceRollResult
 import com.dodam.dicegame.vo.GetRoomsCountMessageVO
 import com.dodam.dicegame.vo.JoinRoomMessageVO
 import com.dodam.dicegame.vo.PlayGameMessageVO
+import com.dodam.dicegame.vo.SaveScoreVO
 import com.dodam.dicegame.vo.StartGameMessageVO
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
@@ -318,7 +320,6 @@ fun MultiDiceRoller(
             Spacer(modifier = Modifier.height(5.dp))
 
             // Stop 버튼 추가
-
             Button(
                 onClick = {
 
@@ -328,6 +329,11 @@ fun MultiDiceRoller(
                     }
                     Log.d("Stop했을때 nickName", userNickname)
                     isSelfStop = true
+
+                    saveScoreWithOkHttpAsync(
+                        SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+                        context
+                    ) {}
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -340,23 +346,33 @@ fun MultiDiceRoller(
 
             Spacer(modifier = Modifier.height(13.dp))
 
-            if (parsedTargetNumber >= 1 && rollCount > 0)
+            if (parsedTargetNumber >= 1 && rollCount > 0) {
+
                 if (parsedTargetNumber < rolledSum) {
 
                     webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "N","playGame")
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "N", "playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
-                    isSelfStop = true
-                    Log.d("Stop했을때 nickName", userNickname)
 
+                    isSelfStop = true
+
+                    saveScoreWithOkHttpAsync(
+                        SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+                        context
+                    ) {}
                 }
-                if(isGameStarted&&rollCount>0) {
-                    displayDiceRollResult(parsedTargetNumber, rolledSum, rollCount)
-                }
+
+            }
+
+            if(isGameStarted&&rollCount>0) {
+                displayDiceRollResult(parsedTargetNumber, rolledSum, rollCount)
+            }
+
             if (rollCount < 1) {
                 displayDiceBlackJackTip(tipMessage)
             }
+
         }
     }
 }
