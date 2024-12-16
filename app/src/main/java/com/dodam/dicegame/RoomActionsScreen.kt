@@ -33,7 +33,7 @@ import com.dodam.dicegame.api.createRoomWithOkHttpSync
 import com.dodam.dicegame.vo.RoomInfoVO
 import com.dodam.dicegame.vo.RoomJoinVO
 import com.dodam.dicegame.vo.RoomType
-import joinPublicRoomWithOkHttpSync
+import com.dodam.dicegame.api.joinPublicRoomWithOkHttpSync
 import joinSecretRoomWithOkHttpSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -196,8 +196,7 @@ fun RoomActionsScreen(
                         val roomPlayerDto = joinPublicRoomWithOkHttpSync(
                             nickName,
                             context,
-                            navController,
-                            RoomPlayerDto(0, 0, 0, 0, 0, "", "")
+                            navController
                         )
 
                         withContext(Dispatchers.Main) {

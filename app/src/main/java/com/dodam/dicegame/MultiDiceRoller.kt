@@ -1,9 +1,9 @@
 package com.dodam.dicegame
 
+import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dodam.dicegame.api.WebSocketClient
+import com.dodam.dicegame.api.getScoreResultsOkHttpSync
 import com.dodam.dicegame.api.saveScoreWithOkHttpAsync
 import com.dodam.dicegame.api.socketServerUrl
 import com.dodam.dicegame.component.displayDiceBlackJackTip
@@ -46,9 +47,14 @@ import com.dodam.dicegame.vo.PlayGameMessageVO
 import com.dodam.dicegame.vo.SaveScoreVO
 import com.dodam.dicegame.vo.StartGameMessageVO
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MultiDiceRoller(
@@ -143,7 +149,9 @@ fun MultiDiceRoller(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 뒤로가기 버튼
-            IconButton(onClick = { navController.popBackStack() }) {
+            IconButton(onClick = { navController.popBackStack()
+                                webSocketClient?.closeConnection()
+            }) {
                 androidx.compose.material3.Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
                     contentDescription = "뒤로가기",
@@ -327,13 +335,14 @@ fun MultiDiceRoller(
                         val playGameMessageVO = PlayGameMessageVO(roomId, "N","playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
-                    Log.d("Stop했을때 nickName", userNickname)
+
                     isSelfStop = true
 
                     saveScoreWithOkHttpAsync(
                         SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
                         context
-                    ) {}
+                    ) {
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -360,7 +369,8 @@ fun MultiDiceRoller(
                     saveScoreWithOkHttpAsync(
                         SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
                         context
-                    ) {}
+                    ) {
+                    }
                 }
 
             }
@@ -371,6 +381,21 @@ fun MultiDiceRoller(
 
             if (rollCount < 1) {
                 displayDiceBlackJackTip(tipMessage)
+            }
+
+
+            if (isGameEnd) {
+                CoroutineScope(Dispatchers.Main).launch {
+
+                    val scoreResultsDtoList = withContext(Dispatchers.IO) {
+                        getScoreResultsOkHttpSync(roomId, context)
+                    }
+
+                    scoreResultsDtoList?.forEach { scoreResultsDto ->
+                        Log.d("scoreResult : ", scoreResultsDto.toString())
+                    }
+                }
+
             }
 
         }

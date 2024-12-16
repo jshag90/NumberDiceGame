@@ -2,19 +2,18 @@ package com.dodam.dicegame.api
 
 import android.content.Context
 import android.widget.Toast
-import androidx.navigation.NavController
-import com.dodam.dicegame.component.showNicknameChangeModal
-import com.dodam.dicegame.dto.RoomPlayerDto
+import com.dodam.dicegame.dto.ScoreResultsDto
 import com.dodam.dicegame.vo.ReturnCodeVO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.Request
 
-fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navController: NavController): RoomPlayerDto? {
-    val url = "$serverUrl/room/public/join/nick-name=${nickName}"
+fun getScoreResultsOkHttpSync(roomId: String, context: Context): List<ScoreResultsDto>? {
+    val url = "$serverUrl/score/results/room-id=${roomId}"
 
-    val request = Request.Builder().url(url).get().addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()
+    val request = Request.Builder().url(url).get()
+        .addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()
 
     val responseBody = executeRequest(request)
     if (responseBody == null) {
@@ -24,7 +23,7 @@ fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navControlle
         return null
     }
 
-    val returnCodeVO: ReturnCodeVO<RoomPlayerDto>? = fromJson(responseBody)
+    val returnCodeVO: ReturnCodeVO<List<ScoreResultsDto>>? = fromJson(responseBody)
 
     if (returnCodeVO == null) {
         CoroutineScope(Dispatchers.Main).launch {
@@ -38,13 +37,6 @@ fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navControlle
             Toast.makeText(context, "공개방이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
         }
         return null
-    }
-
-    if (returnCodeVO.returnCode == -5) {
-        CoroutineScope(Dispatchers.Main).launch {
-            returnCodeVO.data?.let { showNicknameChangeModal(context, it.playerId, navController,  returnCodeVO.data) }
-        }
-        return returnCodeVO.data
     }
 
     return returnCodeVO.data
