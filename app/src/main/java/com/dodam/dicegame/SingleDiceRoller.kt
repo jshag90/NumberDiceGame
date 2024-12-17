@@ -212,7 +212,8 @@ fun DiceRoller() {
                 enabled = !isRolling && rolledSum < targetNumber, // 조건 추가
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 13.dp)
+                    .padding(horizontal = 13.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25))
             ) {
                 Icon(
                     imageVector = Icons.Default.ThumbUp,
@@ -239,7 +240,8 @@ fun DiceRoller() {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 13.dp)
+                    .padding(horizontal = 13.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,

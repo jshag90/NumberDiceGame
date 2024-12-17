@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,10 +25,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -64,52 +69,88 @@ fun RoomActionsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(40.dp),
-            /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),*/
-            shape = RectangleShape
+                .height(120.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
+            shape = RoundedCornerShape(24.dp) // 버튼 모서리를 매우 둥글게 설정
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "방 만들기", tint = Color.White)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "방만들기",
-                color = Color.White,
-                fontSize = 34.sp
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "방 만들기",
+                    tint = Color.White,
+                    modifier = Modifier.size(120.dp) // 아이콘 크기 크게 설정
+                )
+                Spacer(modifier = Modifier.height(4.dp)) // 아이콘과 텍스트 사이 간격
+                Text(
+                    text = "방만들기",
+                    color = Color.White,
+                    fontSize = 26.sp, // 글씨 크기를 작게 조정
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
+
         Button(
             onClick = { showSecretRoomModal = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(40.dp),
-            /*   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC5)),*/
-            shape = RectangleShape // 각진 모양으로 설정
+                .height(120.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
+            shape = RoundedCornerShape(24.dp) // 버튼 모서리를 둥글게 설정
         ) {
-            Icon(Icons.Filled.Lock, contentDescription = "비공개 방 입장", tint = Color.White)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "비공개방",
-                color = Color.White,
-                fontSize = 34.sp
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Lock, // 비공개방 아이콘
+                    contentDescription = "비공개 방 입장",
+                    tint = Color.White,
+                    modifier = Modifier.size(120.dp) // 아이콘 크기 크게 설정
+                )
+                Spacer(modifier = Modifier.height(4.dp)) // 아이콘과 텍스트 사이 간격
+                Text(
+                    text = "비공개방",
+                    color = Color.White,
+                    fontSize = 26.sp, // 글씨 크기를 작게 조정
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
+
         Button(
             onClick = { showPublicRoomModal = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(40.dp),
-            /*  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),*/
-            shape = RectangleShape
+                .height(120.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
+            shape = RoundedCornerShape(24.dp) // 버튼 모서리를 둥글게 설정
         ) {
-            Icon(Icons.Filled.Face, contentDescription = "공개 방 입장", tint = Color.White)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "공개방",
-                color = Color.White,
-                fontSize = 34.sp
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Face, // 공개방 아이콘
+                    contentDescription = "공개 방 입장",
+                    tint = Color.White,
+                    modifier = Modifier.size(120.dp) // 아이콘 크기 크게 설정
+                )
+                Spacer(modifier = Modifier.height(4.dp)) // 아이콘과 텍스트 사이 간격
+                Text(
+                    text = "공개방",
+                    color = Color.White,
+                    fontSize = 26.sp, // 글씨 크기를 작게 조정
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
+
     }
 
     if (showCreateRoomModal) {

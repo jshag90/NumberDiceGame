@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
     fun AppNavigation(navController: NavHostController) {
         NavHost(
             navController = navController,
-            startDestination = "multi_play" // 기본 화면
+            startDestination = "single_play" // 기본 화면
         ) {
             composable("single_play") {
                 SinglePlayScreen(navController)
@@ -130,7 +130,11 @@ class MainActivity : ComponentActivity() {
                     .padding(end = 4.dp), // 버튼 간 간격 조정
                 border = BorderStroke(1.dp, Color.LightGray) // 테두리 색상
             ) {
-                Text("혼자하기")
+                Text(
+                    text = "연습하기",
+                    color = Color(0xFF141C25) // 글씨 색상 설정
+                )
+
             }
 
             Button(
@@ -152,7 +156,7 @@ class MainActivity : ComponentActivity() {
                     .padding(start = 4.dp), // 버튼 간 간격 조정
                 border = BorderStroke(1.dp, Color.LightGray) // 테두리 색상
             ) {
-                Text("같이하기")
+                Text("게임하기")
             }
         }
     }

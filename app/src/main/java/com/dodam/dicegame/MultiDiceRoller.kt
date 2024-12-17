@@ -3,8 +3,10 @@ package com.dodam.dicegame
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -155,9 +157,9 @@ fun MultiDiceRoller(
         webSocketClient?.closeConnection()
         deletePlayerOkHttpSync(roomId, userNickname, context)
     }
-
+//0xFF141C25
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(), // 배경색 설정,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
 
@@ -206,7 +208,7 @@ fun MultiDiceRoller(
                         text = "입장코드 : $entryCode",
                         fontSize = 16.sp, // Smaller font size for entry code
                         fontWeight = FontWeight.Normal,
-                        color = Color.Gray // Slightly lighter color for distinction
+                        color = Color.Black // Slightly lighter color for distinction
                     )
                 }
 
@@ -214,14 +216,14 @@ fun MultiDiceRoller(
                     text = "최대인원 : $maxPlayer",
                     fontSize = 16.sp, // Smaller font size for entry code
                     fontWeight = FontWeight.Normal,
-                    color = Color.Gray // Slightly lighter color for distinction
+                    color = Color.Black // Slightly lighter color for distinction
                 )
 
                 Text(
                     text = "입장인원 : $memberCount",
                     fontSize = 16.sp, // Smaller font size for entry code
                     fontWeight = FontWeight.Normal,
-                    color = Color.Gray // Slightly lighter color for distinction
+                    color = Color.Black // Slightly lighter color for distinction
                 )
             }
         }
@@ -264,11 +266,10 @@ fun MultiDiceRoller(
 
                 Button(
                     onClick = {
-                        /*if(memberCount < 2) {
-                            Toast.makeText(context, "참가 인원이 최소 2명이 되어야 합니다.", Toast.LENGTH_SHORT)
-                                .apply { show() }
+                        if(memberCount < 2) {
+                            Toast.makeText(context, "참가 인원이 최소 2명이 되어야 합니다.", Toast.LENGTH_SHORT).apply { show() }
                             return@Button
-                        }*/
+                        }
 
                         webSocketClient?.let { client ->
                             val startGameMessageVO = StartGameMessageVO(roomId, "startGame")
@@ -278,6 +279,7 @@ fun MultiDiceRoller(
                     modifier = Modifier
                         .width(200.dp)
                         .padding(horizontal = 13.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
                 ) {
                     Text("게임시작")
                 }
@@ -306,7 +308,14 @@ fun MultiDiceRoller(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("라운드 ${rollCount + 1}")
+                Text(
+                    text = "라운드 ${rollCount + 1}",
+                    color = Color(0xFFFFEB3B), // 노란색 (Material Design Yellow 500)
+                    fontWeight = FontWeight.Bold, // 굵게 설정
+                    style = MaterialTheme.typography.bodyLarge // 기본 스타일도 유지
+                )
+
+
             }
 
             Row(
@@ -337,7 +346,7 @@ fun MultiDiceRoller(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
-                colors = ButtonDefaults.buttonColors(Color.Red),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
                 enabled = isGameStarted && !isRolling && isAllDoneRoundPlay && !isSelfStop// 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
                 Text("굴리기")
@@ -366,7 +375,7 @@ fun MultiDiceRoller(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 13.dp),
-                colors = ButtonDefaults.buttonColors(Color.Blue),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                 enabled = (isGameStarted && !isRolling && isAllDoneRoundPlay && !isSelfStop)
             ) {
                 Text("STOP")
