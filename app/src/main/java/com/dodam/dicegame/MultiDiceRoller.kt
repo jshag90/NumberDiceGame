@@ -41,16 +41,15 @@ import com.dodam.dicegame.api.saveScoreWithOkHttpAsync
 import com.dodam.dicegame.api.socketServerUrl
 import com.dodam.dicegame.component.displayDiceBlackJackTip
 import com.dodam.dicegame.component.displayDiceRollResult
+import com.dodam.dicegame.dto.ScoreResultsDto
 import com.dodam.dicegame.vo.GetRoomsCountMessageVO
 import com.dodam.dicegame.vo.JoinRoomMessageVO
 import com.dodam.dicegame.vo.PlayGameMessageVO
 import com.dodam.dicegame.vo.SaveScoreVO
 import com.dodam.dicegame.vo.StartGameMessageVO
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
@@ -112,14 +111,14 @@ fun MultiDiceRoller(
                     isGameStarted = gameStarted
                 },
                 { allDoneRoundPlay: String ->
-                   if(allDoneRoundPlay=="done"){
-                       isAllDoneRoundPlay = true;
-                   }
+                    if (allDoneRoundPlay == "done") {
+                        isAllDoneRoundPlay = true;
+                    }
 
-                   if(allDoneRoundPlay=="end"){
-                       isAllDoneRoundPlay = false
-                       isGameEnd = true
-                   }
+                    if (allDoneRoundPlay == "end") {
+                        isAllDoneRoundPlay = false
+                        isGameEnd = true
+                    }
 
                 })
 
@@ -133,9 +132,21 @@ fun MultiDiceRoller(
         }
     }
 
+    val showGameScoreResultsModal = remember { mutableStateOf(false) }
+    val scoreResultsDtoListState = remember { mutableStateOf<List<ScoreResultsDto>>(emptyList()) }
 
+    LaunchedEffect(isGameEnd) {
+        if (isGameEnd) {
+            val scoreResultsDtoList = withContext(Dispatchers.IO) {
+                getScoreResultsOkHttpSync(roomId, context) // 비동기 함수 호출
+            }
 
-
+            scoreResultsDtoList?.let {
+                scoreResultsDtoListState.value = it
+                showGameScoreResultsModal.value = true // 모달 표시
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -149,8 +160,9 @@ fun MultiDiceRoller(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 뒤로가기 버튼
-            IconButton(onClick = { navController.popBackStack()
-                                webSocketClient?.closeConnection()
+            IconButton(onClick = {
+                navController.popBackStack()
+                webSocketClient?.closeConnection()
             }) {
                 androidx.compose.material3.Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
@@ -303,15 +315,14 @@ fun MultiDiceRoller(
 
                     isAllDoneRoundPlay = false
 
-                    webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "Y","playGame")
-                        client.sendMessage(Gson().toJson(playGameMessageVO))
-                    }
-
-
                     if (!isRolling) {
                         isRolling = true
                         rollCount++
+                    }
+
+                    webSocketClient?.let { client ->
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "Y", "playGame")
+                        client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
 
                 },
@@ -331,18 +342,18 @@ fun MultiDiceRoller(
             Button(
                 onClick = {
 
+                    isSelfStop = true
+
                     webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "N","playGame")
+                        val playGameMessageVO = PlayGameMessageVO(roomId, "N", "playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
-
-                    isSelfStop = true
 
                     saveScoreWithOkHttpAsync(
                         SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
                         context
-                    ) {
-                    }
+                    ) {}
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -359,23 +370,23 @@ fun MultiDiceRoller(
 
                 if (parsedTargetNumber < rolledSum) {
 
+                    isSelfStop = true
+
                     webSocketClient?.let { client ->
                         val playGameMessageVO = PlayGameMessageVO(roomId, "N", "playGame")
                         client.sendMessage(Gson().toJson(playGameMessageVO))
                     }
 
-                    isSelfStop = true
-
                     saveScoreWithOkHttpAsync(
                         SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
                         context
-                    ) {
-                    }
+                    ) {}
+
                 }
 
             }
 
-            if(isGameStarted&&rollCount>0) {
+            if (isGameStarted && rollCount > 0) {
                 displayDiceRollResult(parsedTargetNumber, rolledSum, rollCount)
             }
 
@@ -384,19 +395,21 @@ fun MultiDiceRoller(
             }
 
 
-            if (isGameEnd) {
-                CoroutineScope(Dispatchers.Main).launch {
-
-                    val scoreResultsDtoList = withContext(Dispatchers.IO) {
-                        getScoreResultsOkHttpSync(roomId, context)
-                    }
-
-                    scoreResultsDtoList?.forEach { scoreResultsDto ->
-                        Log.d("scoreResult : ", scoreResultsDto.toString())
-                    }
+            // 모달 다이얼로그 표시
+            if (showGameScoreResultsModal.value) {
+                webSocketClient?.let {
+                    GameScoreResultsModal(
+                        navController,
+                        onConfirm = { results ->
+                            showGameScoreResultsModal.value = false // 모달 닫기
+                        },
+                        scoreResultsDtoList = scoreResultsDtoListState.value,
+                        currentUserNickName = userNickname,
+                        webSocketClient = it
+                    )
                 }
-
             }
+
 
         }
     }
