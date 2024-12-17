@@ -3,7 +3,7 @@ package com.dodam.dicegame
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
-import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dodam.dicegame.api.WebSocketClient
+import com.dodam.dicegame.api.deletePlayerOkHttpSync
 import com.dodam.dicegame.api.getScoreResultsOkHttpSync
 import com.dodam.dicegame.api.saveScoreWithOkHttpAsync
 import com.dodam.dicegame.api.socketServerUrl
@@ -148,6 +149,13 @@ fun MultiDiceRoller(
         }
     }
 
+    //뒤로가기 물리 버튼
+    BackHandler {
+        navController.popBackStack()
+        webSocketClient?.closeConnection()
+        deletePlayerOkHttpSync(roomId, userNickname, context)
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
@@ -159,10 +167,10 @@ fun MultiDiceRoller(
                 .padding(13.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 뒤로가기 버튼
             IconButton(onClick = {
                 navController.popBackStack()
                 webSocketClient?.closeConnection()
+                deletePlayerOkHttpSync(roomId, userNickname, context)
             }) {
                 androidx.compose.material3.Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
