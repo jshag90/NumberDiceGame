@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -117,6 +118,13 @@ fun GameScoreResultsModal(
                                     contentDescription = "Star",
                                     modifier = Modifier.size(16.dp), // Adjust the icon size
                                     tint = starColor // Set the appropriate color based on the rank
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Filled.Face, // Star icon from Material Icons
+                                    contentDescription = "Face",
+                                    modifier = Modifier.size(16.dp), // Adjust the icon size
+                                    tint = Color.LightGray // Set the appropriate color based on the rank
                                 )
                             }
                             Text(
