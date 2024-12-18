@@ -44,10 +44,13 @@ fun updateNickNameWithOkHttpAsync(
                             //닉네임 변경에 성공하면 게임화면으로 재진입
                             navController.navigate(
                                 "game_room/${roomPlayerDto.targetNumber}" +
-                                        "/${roomPlayerDto.diceCount}/true/-1" +
+                                        "/${roomPlayerDto.diceCount}" +
+                                        "/${roomPlayerDto.isPublic}" +
+                                        "/${roomPlayerDto.entryCode}" +
                                         "/${nickName}" + // Updated nickname
                                         "/${roomPlayerDto.maxPlayer}" +
-                                        "/${roomPlayerDto.roomId}"
+                                        "/${roomPlayerDto.roomId}"+
+                                        "/${roomPlayerDto.isRoomMaster}"
                             ) {
                                 popUpTo("previous_screen_route") { inclusive = true }
                                 launchSingleTop = true

@@ -47,7 +47,9 @@ import com.dodam.dicegame.component.displayDiceRollResult
 import com.dodam.dicegame.dto.ScoreResultsDto
 import com.dodam.dicegame.vo.GetRoomsCountMessageVO
 import com.dodam.dicegame.vo.JoinRoomMessageVO
+import com.dodam.dicegame.vo.LeaveRoomMessageVO
 import com.dodam.dicegame.vo.PlayGameMessageVO
+import com.dodam.dicegame.vo.ResponseMessageVO
 import com.dodam.dicegame.vo.SaveScoreVO
 import com.dodam.dicegame.vo.StartGameMessageVO
 import com.google.gson.Gson
@@ -74,8 +76,8 @@ fun MultiDiceRoller(
     var rolledSum by remember { mutableStateOf(0) }
     var rollCount by remember { mutableStateOf(0) }
     var rolledText by remember { mutableStateOf("") }
-    val parsedTargetNumber = targetNumber.toIntOrNull() ?: 21 // Default value
-    val parsedNumDice = numDice.toIntOrNull() ?: 1 // Default value
+    val parsedTargetNumber = targetNumber.toIntOrNull() ?: 21
+    val parsedNumDice = numDice.toIntOrNull() ?: 1
 
     var showGifList by remember { mutableStateOf(List(parsedNumDice) { false }) }
     var isRolling by remember { mutableStateOf(false) }
@@ -103,9 +105,13 @@ fun MultiDiceRoller(
     var isGameEnd by remember { mutableStateOf(false) }
     var webSocketClient by remember { mutableStateOf<WebSocketClient?>(null) }
     var isSelfStop by remember { mutableStateOf(false) }
+    var isRoomMasterFlag by remember { mutableStateOf(isRoomMaster) }
+
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
+            val getRoomsCountMessageVO = GetRoomsCountMessageVO(roomId, "getRoomsCount") //입장 인원
+            val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom") //방 입장
             client.connect(socketServerUrl,
                 { roomCount: Int ->
                     memberCount = roomCount
@@ -114,21 +120,23 @@ fun MultiDiceRoller(
                     isGameStarted = gameStarted
                 },
                 { allDoneRoundPlay: String ->
-                    if (allDoneRoundPlay == "done") {
-                        isAllDoneRoundPlay = true;
+                    when (allDoneRoundPlay) {
+                        "done" -> isAllDoneRoundPlay = true
+                        "end" -> {
+                            isAllDoneRoundPlay = false
+                            isGameEnd = true
+                        }
                     }
-
-                    if (allDoneRoundPlay == "end") {
-                        isAllDoneRoundPlay = false
-                        isGameEnd = true
+                },
+                { isChangeRoomMaster: ResponseMessageVO ->
+                    if (isChangeRoomMaster.subMessage == "changeRoomMaster" && isChangeRoomMaster.message == userNickname) {
+                        isRoomMasterFlag = "true"
                     }
+                    client.sendMessage(Gson().toJson(getRoomsCountMessageVO)) //입장 인원 갱신
+                }
+            )
 
-                })
-
-            val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom")
             client.sendMessage(Gson().toJson(joinRoomMessageVO))
-
-            val getRoomsCountMessageVO = GetRoomsCountMessageVO(roomId, "getRoomsCount")
             client.sendMessage(Gson().toJson(getRoomsCountMessageVO))
 
             webSocketClient = client
@@ -140,24 +148,23 @@ fun MultiDiceRoller(
 
     LaunchedEffect(isGameEnd) {
         if (isGameEnd) {
-            val scoreResultsDtoList = withContext(Dispatchers.IO) {
-                getScoreResultsOkHttpSync(roomId, context) // 비동기 함수 호출
-            }
+            val scoreResultsDtoList =
+                withContext(Dispatchers.IO) { getScoreResultsOkHttpSync(roomId, context) }
 
             scoreResultsDtoList?.let {
                 scoreResultsDtoListState.value = it
-                showGameScoreResultsModal.value = true // 모달 표시
+                showGameScoreResultsModal.value = true
             }
         }
     }
 
-    //뒤로가기 물리 버튼
     BackHandler {
         navController.popBackStack()
+        sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
         webSocketClient?.closeConnection()
         deletePlayerOkHttpSync(roomId, userNickname, context)
     }
-//0xFF141C25
+
     Column(
         modifier = Modifier.fillMaxSize(), // 배경색 설정,
         verticalArrangement = Arrangement.SpaceBetween
@@ -169,8 +176,10 @@ fun MultiDiceRoller(
                 .padding(13.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             IconButton(onClick = {
                 navController.popBackStack()
+                sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
                 webSocketClient?.closeConnection()
                 deletePlayerOkHttpSync(roomId, userNickname, context)
             }) {
@@ -181,9 +190,8 @@ fun MultiDiceRoller(
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp)) // 뒤로가기 버튼과 닉네임 사이의 간격
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // 닉네임 텍스트
             Text(
                 text = "$userNickname 님",
                 fontSize = 20.sp,
@@ -191,12 +199,12 @@ fun MultiDiceRoller(
                 color = Color.Black
             )
 
-            Spacer(modifier = Modifier.weight(1f)) // 닉네임과 방번호 사이의 간격을 자동으로 채움
+            Spacer(modifier = Modifier.weight(1f))
 
             Column(
-                horizontalAlignment = Alignment.End // Align text to the end
+                horizontalAlignment = Alignment.End
             ) {
-                // Room number text
+
                 Text(
                     text = "방번호 : $roomId",
                     fontSize = 20.sp,
@@ -206,40 +214,41 @@ fun MultiDiceRoller(
                 if (isPublic == "false") {
                     Text(
                         text = "입장코드 : $entryCode",
-                        fontSize = 16.sp, // Smaller font size for entry code
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color.Black // Slightly lighter color for distinction
+                        color = Color.Black
                     )
                 }
 
                 Text(
                     text = "최대인원 : $maxPlayer",
-                    fontSize = 16.sp, // Smaller font size for entry code
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color.Black // Slightly lighter color for distinction
+                    color = Color.Black
                 )
 
                 Text(
                     text = "입장인원 : $memberCount",
-                    fontSize = 16.sp, // Smaller font size for entry code
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color.Black // Slightly lighter color for distinction
+                    color = Color.Black
                 )
             }
         }
 
         Box(
             modifier = Modifier
-                .weight(1f) // 상단 영역을 스크롤 가능한 공간으로 설정
+                .weight(1f)
                 .padding(13.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(13.dp))
+
                 if (isRolling) {
                     LaunchedEffect(Unit) {
-                        delay(1000) // 1초 후 결과 업데이트
+                        delay(900)
                         diceValues = List(parsedNumDice) { Random.nextInt(1, 7) }
                         rolledText = diceValues.joinToString(", ")
                         rolledSum += diceValues.sum()
@@ -262,12 +271,13 @@ fun MultiDiceRoller(
         ) {
 
             // 게임시작 버튼
-            if (isRoomMaster == "true" && !isGameStarted) {
+            if (isRoomMasterFlag == "true" && !isGameStarted) {
 
                 Button(
                     onClick = {
-                        if(memberCount < 2) {
-                            Toast.makeText(context, "참가 인원이 최소 2명이 되어야 합니다.", Toast.LENGTH_SHORT).apply { show() }
+                        if (memberCount < 2) {
+                            Toast.makeText(context, "참가 인원이 최소 2명이 되어야 합니다.", Toast.LENGTH_SHORT)
+                                .apply { show() }
                             return@Button
                         }
 
@@ -292,15 +302,14 @@ fun MultiDiceRoller(
                 tipMessage = "모든 플레이어가 굴리기|STOP을 결정해야지 버튼이 활성화됩니다."
             }
 
-            // 게임 시작 버튼을 누른 후에는 굴리기 버튼과 STOP 버튼을 활성화시킴
             Spacer(modifier = Modifier.height(13.dp))
 
             Text(
                 text = "$rolledSum",
-                color = Color(0xFFD32F2F), // 강조를 위한 강렬한 빨간색 (Material Design Red 700)
-                fontSize = 42.sp, // 글씨 크기 크게 설정
-                fontWeight = FontWeight.Bold, // 굵게 설정
-                style = MaterialTheme.typography.bodyLarge // 기본 스타일도 유지
+                color = Color(0xFFD32F2F),
+                fontSize = 42.sp,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge
             )
 
             Spacer(modifier = Modifier.height(13.dp))
@@ -310,12 +319,10 @@ fun MultiDiceRoller(
             ) {
                 Text(
                     text = "라운드 ${rollCount + 1}",
-                    color = Color(0xFFFFEB3B), // 노란색 (Material Design Yellow 500)
-                    fontWeight = FontWeight.Bold, // 굵게 설정
-                    style = MaterialTheme.typography.bodyLarge // 기본 스타일도 유지
+                    color = Color(0xFFFFEB3B),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge
                 )
-
-
             }
 
             Row(
@@ -337,10 +344,7 @@ fun MultiDiceRoller(
                         rollCount++
                     }
 
-                    webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "Y", "playGame")
-                        client.sendMessage(Gson().toJson(playGameMessageVO))
-                    }
+                    sendPlayGameMessageWebSocket(webSocketClient, roomId, "Y")
 
                 },
                 modifier = Modifier
@@ -355,16 +359,12 @@ fun MultiDiceRoller(
 
             Spacer(modifier = Modifier.height(5.dp))
 
-            // Stop 버튼 추가
             Button(
                 onClick = {
 
                     isSelfStop = true
 
-                    webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "N", "playGame")
-                        client.sendMessage(Gson().toJson(playGameMessageVO))
-                    }
+                    sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
 
                     saveScoreWithOkHttpAsync(
                         SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
@@ -389,10 +389,7 @@ fun MultiDiceRoller(
 
                     isSelfStop = true
 
-                    webSocketClient?.let { client ->
-                        val playGameMessageVO = PlayGameMessageVO(roomId, "N", "playGame")
-                        client.sendMessage(Gson().toJson(playGameMessageVO))
-                    }
+                    sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
 
                     saveScoreWithOkHttpAsync(
                         SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
@@ -411,8 +408,6 @@ fun MultiDiceRoller(
                 displayDiceBlackJackTip(tipMessage)
             }
 
-
-            // 모달 다이얼로그 표시
             if (showGameScoreResultsModal.value) {
                 webSocketClient?.let {
                     GameScoreResultsModal(
@@ -427,8 +422,32 @@ fun MultiDiceRoller(
                 }
             }
 
-
         }
+    }
+}
+
+/**
+ * websocket으로 게임 진행 여부 메시지를 보냄.
+ */
+private fun sendPlayGameMessageWebSocket(
+    webSocketClient: WebSocketClient?,
+    roomId: String,
+    isGo: String
+) {
+    webSocketClient?.let { client ->
+        val playGameMessageVO = PlayGameMessageVO(roomId, isGo, "playGame")
+        client.sendMessage(Gson().toJson(playGameMessageVO))
+    }
+}
+
+private fun sendLeaveRoomMessageWebSocket(
+    webSocketClient: WebSocketClient?,
+    roomId: String,
+    nickName: String
+) {
+    webSocketClient?.let { client ->
+        val playGameMessageVO = LeaveRoomMessageVO(roomId, nickName, "leaveRoom")
+        client.sendMessage(Gson().toJson(playGameMessageVO))
     }
 }
 

@@ -200,7 +200,7 @@ fun RoomActionsScreen(
                             RoomJoinVO(roomId, entryCode, nickName),
                             context,
                             navController,
-                            RoomPlayerDto(0, 0, 0, 0, 0, "", "")
+                            RoomPlayerDto(0, 0, 0, 0, 0, "", "", "","")
                         )
 
                         withContext(Dispatchers.Main) {

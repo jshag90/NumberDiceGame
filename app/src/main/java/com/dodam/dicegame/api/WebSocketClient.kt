@@ -19,9 +19,13 @@ class WebSocketClient(private val context: Context) {
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
-    fun connect(url: String, onRoomCountReceived: (Int) -> Unit, onIsGameStartReceived: (Boolean) -> Unit, onIsAllDoneRoundPlay: (String) -> Unit) {
+    fun connect(url: String, onRoomCountReceived: (Int) -> Unit
+                , onIsGameStartReceived: (Boolean) -> Unit
+                , onIsAllDoneRoundPlay: (String) -> Unit
+                , onIsChangeRoomMaster: (ResponseMessageVO) -> Unit
+    ) {
         val request = Request.Builder().url(url).build()
-        webSocket = client.newWebSocket(request, WebSocketListenerImpl(context, onRoomCountReceived, onIsGameStartReceived, onIsAllDoneRoundPlay))
+        webSocket = client.newWebSocket(request, WebSocketListenerImpl(context, onRoomCountReceived, onIsGameStartReceived, onIsAllDoneRoundPlay, onIsChangeRoomMaster))
     }
 
     fun sendMessage(message: String) {
@@ -35,7 +39,8 @@ class WebSocketClient(private val context: Context) {
     private class WebSocketListenerImpl(private val context: Context,
                                         private val onRoomCountReceived: (Int) -> Unit, // room count를 업데이트하는 콜백 추가
         private val onIsGameStartReceived: (Boolean) -> Unit,
-        private val onIsAllDoneRoundPlay: (String) -> Unit
+        private val onIsAllDoneRoundPlay: (String) -> Unit,
+        private val onIsChangeRoomMaster: (ResponseMessageVO) -> Unit
     ) : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             super.onOpen(webSocket, response)
@@ -61,6 +66,14 @@ class WebSocketClient(private val context: Context) {
                         showToast("모든 사용자가 STOP을 선택했습니다. 게임을 종료합니다.")
                     }
 
+                }
+                "leaveRoom" ->{
+                    if(responseMessageVO.subMessage=="changeRoomMaster"){
+                        showToast(responseMessageVO.message+"님으로 방장이 변경되었습니다.")
+                    }else{
+                        showToast(responseMessageVO.message+"님이 퇴장하였습니다.")
+                    }
+                    onIsChangeRoomMaster(responseMessageVO)
                 }
 
 
