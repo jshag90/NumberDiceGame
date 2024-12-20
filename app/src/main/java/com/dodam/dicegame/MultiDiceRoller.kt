@@ -158,11 +158,21 @@ fun MultiDiceRoller(
         }
     }
 
+    if(isGameStarted&&memberCount<2){
+        Toast.makeText(context, "더 이상 게임을 진행할 플레이어가 존재하지 않습니다.", Toast.LENGTH_SHORT).apply { show() }
+        isSelfStop = true
+        sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
+        saveScoreWithOkHttpAsync(
+            SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+            context
+        ) {}
+    }
+
     BackHandler {
         navController.popBackStack()
         sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
-        webSocketClient?.closeConnection()
         deletePlayerOkHttpSync(roomId, userNickname, context)
+        webSocketClient?.closeConnection()
     }
 
     Column(
@@ -178,10 +188,16 @@ fun MultiDiceRoller(
         ) {
 
             IconButton(onClick = {
+                sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
+                saveScoreWithOkHttpAsync(
+                    SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+                    context
+                ) {
+                    sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
+                    webSocketClient?.closeConnection()
+                    deletePlayerOkHttpSync(roomId, userNickname, context)
+                }
                 navController.popBackStack()
-                sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
-                webSocketClient?.closeConnection()
-                deletePlayerOkHttpSync(roomId, userNickname, context)
             }) {
                 androidx.compose.material3.Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
@@ -421,6 +437,7 @@ fun MultiDiceRoller(
                     )
                 }
             }
+
 
         }
     }

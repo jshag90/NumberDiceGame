@@ -90,7 +90,7 @@ fun GameScoreResultsModal(
                         textAlign = TextAlign.Center // 가운데 정렬
                     )
                     Text(
-                        text = "점수",
+                        text = "최종숫자",
                         modifier = Modifier.weight(1f),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center // 가운데 정렬
