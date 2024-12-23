@@ -17,15 +17,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -216,8 +215,8 @@ fun DiceRoller() {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25))
             ) {
                 Icon(
-                    imageVector = Icons.Default.ThumbUp,
-                    contentDescription = "Refresh Icon",
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "PlayArrow Icon",
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
