@@ -102,14 +102,11 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun TopButtons(navController: NavHostController, currentScreen: String) {
-        // 상태 관리: 선택된 버튼을 추적
-        val selectedButton = remember(currentScreen) { currentScreen }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween // 버튼 간격 조정
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
                 onClick = {
@@ -120,21 +117,17 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (selectedButton == "single_play") Color.LightGray else Color.White, // 현재 화면이면 lightGray로 설정
-                    contentColor = if (selectedButton == "single_play") Color.White else MaterialTheme.colorScheme.primary // 글자 색을 선택된 버튼은 흰색으로 설정
+                    containerColor = if (currentScreen == "single_play") Color(0xFF141C25) else Color.White, // 클릭 여부에 따라 배경색 설정
+                    contentColor = if (currentScreen == "single_play") Color.White else Color(0xFF141C25) // 클릭 여부에 따라 텍스트 색상 설정
                 ),
-                shape = MaterialTheme.shapes.small, // 각진 버튼
+                shape = MaterialTheme.shapes.small,
                 modifier = Modifier
-                    .weight(1f) // 버튼을 같은 크기로
-                    .height(50.dp) // 버튼 높이 설정
-                    .padding(end = 4.dp), // 버튼 간 간격 조정
-                border = BorderStroke(1.dp, Color.LightGray) // 테두리 색상
+                    .weight(1f)
+                    .height(50.dp)
+                    .padding(end = 4.dp),
+                border = BorderStroke(1.dp, Color.LightGray)
             ) {
-                Text(
-                    text = "연습하기",
-                    color = Color(0xFF141C25) // 글씨 색상 설정
-                )
-
+                Text("연습하기")
             }
 
             Button(
@@ -146,15 +139,15 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (selectedButton == "multi_play") Color.LightGray else Color.White, // 현재 화면이면 lightGray로 설정
-                    contentColor = if (selectedButton == "multi_play") Color.White else MaterialTheme.colorScheme.secondary // 글자 색을 선택된 버튼은 흰색으로 설정
+                    containerColor = if (currentScreen == "multi_play") Color(0xFF141C25) else Color.White, // 클릭 여부에 따라 배경색 설정
+                    contentColor = if (currentScreen == "multi_play") Color.White else Color(0xFF141C25) // 클릭 여부에 따라 텍스트 색상 설정
                 ),
-                shape = MaterialTheme.shapes.small, // 각진 버튼
+                shape = MaterialTheme.shapes.small,
                 modifier = Modifier
-                    .weight(1f) // 버튼을 같은 크기로
-                    .height(50.dp) // 버튼 높이 설정
-                    .padding(start = 4.dp), // 버튼 간 간격 조정
-                border = BorderStroke(1.dp, Color.LightGray) // 테두리 색상
+                    .weight(1f)
+                    .height(50.dp)
+                    .padding(start = 4.dp),
+                border = BorderStroke(1.dp, Color.LightGray)
             ) {
                 Text("게임하기")
             }
