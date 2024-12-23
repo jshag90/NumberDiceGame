@@ -6,7 +6,6 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +15,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -156,23 +160,36 @@ fun MultiDiceRoller(
                 showGameScoreResultsModal.value = true
             }
         }
+
     }
 
-    if(isGameStarted&&memberCount<2){
-        Toast.makeText(context, "더 이상 게임을 진행할 플레이어가 존재하지 않습니다.", Toast.LENGTH_SHORT).apply { show() }
-        isSelfStop = true
+    if (isGameStarted && isGameEnd && memberCount < 2) {
         sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
         saveScoreWithOkHttpAsync(
             SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
             context
         ) {}
+
+        isSelfStop = true
+        isGameStarted = false
+
+        Toast.makeText(context, "더 이상 게임을 진행할 플레이어가 존재하지 않습니다.", Toast.LENGTH_SHORT)
+            .apply { show() }
     }
 
+
+
     BackHandler {
+        sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
+        saveScoreWithOkHttpAsync(
+            SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+            context
+        ) {
+            sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
+            webSocketClient?.closeConnection()
+            deletePlayerOkHttpSync(roomId, userNickname, context)
+        }
         navController.popBackStack()
-        sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
-        deletePlayerOkHttpSync(roomId, userNickname, context)
-        webSocketClient?.closeConnection()
     }
 
     Column(
@@ -301,6 +318,7 @@ fun MultiDiceRoller(
                             val startGameMessageVO = StartGameMessageVO(roomId, "startGame")
                             client.sendMessage(Gson().toJson(startGameMessageVO))
                         }
+                        isRoomMasterFlag = "false"
                     },
                     modifier = Modifier
                         .width(200.dp)
@@ -369,6 +387,12 @@ fun MultiDiceRoller(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
                 enabled = isGameStarted && !isRolling && isAllDoneRoundPlay && !isSelfStop// 게임 시작 후에만 활성화, 굴릴 때는 비활성화
             ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "PlayArrow Icon",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text("굴리기")
             }
 
@@ -394,6 +418,12 @@ fun MultiDiceRoller(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                 enabled = (isGameStarted && !isRolling && isAllDoneRoundPlay && !isSelfStop)
             ) {
+                Icon(
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = "Close Icon",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text("STOP")
             }
 

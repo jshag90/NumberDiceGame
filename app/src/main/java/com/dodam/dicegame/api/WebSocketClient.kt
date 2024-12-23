@@ -29,6 +29,7 @@ class WebSocketClient(private val context: Context) {
     }
 
     fun sendMessage(message: String) {
+        Log.d("WebSocket", "sendMessage: $message")
         webSocket?.send(message)
     }
 
