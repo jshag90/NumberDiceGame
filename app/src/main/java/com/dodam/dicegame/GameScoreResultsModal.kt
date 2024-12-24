@@ -1,5 +1,6 @@
 package com.dodam.dicegame
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dodam.dicegame.api.WebSocketClient
+import com.dodam.dicegame.api.deletePlayerOkHttpSync
 import com.dodam.dicegame.dto.ScoreResultsDto
 
 @Composable
@@ -32,7 +34,10 @@ fun GameScoreResultsModal(
     onConfirm: (scoreResultsDtoList: List<ScoreResultsDto>) -> Unit,
     scoreResultsDtoList: List<ScoreResultsDto>,
     currentUserNickName: String,
-    webSocketClient: WebSocketClient
+    webSocketClient: WebSocketClient,
+    roomId: String,
+    userNickname: String,
+    context: Context
 ) {
     AlertDialog(
         onDismissRequest = { },
@@ -41,6 +46,7 @@ fun GameScoreResultsModal(
                 onClick = {
                     onConfirm(scoreResultsDtoList)
                     webSocketClient?.closeConnection()
+                    deletePlayerOkHttpSync(roomId, userNickname, context)
                     navController.popBackStack()
                 }
             ) {

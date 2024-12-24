@@ -45,7 +45,6 @@ class WebSocketClient(private val context: Context) {
     ) : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             super.onOpen(webSocket, response)
-            showToast("WebSocket 연결 성공")
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
@@ -89,12 +88,11 @@ class WebSocketClient(private val context: Context) {
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
             super.onClosing(webSocket, code, reason)
-            showToast("WebSocket 닫는 중: $reason")
+            //showToast("WebSocket 닫는 중: $reason")
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
             super.onClosed(webSocket, code, reason)
-            showToast("WebSocket 연결 종료: $reason")
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

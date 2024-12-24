@@ -2,7 +2,6 @@ package com.dodam.dicegame
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity() {
     fun AppNavigation(navController: NavHostController) {
         NavHost(
             navController = navController,
-            startDestination = "single_play" // 기본 화면
+            startDestination = "multi_play" // 기본 화면
         ) {
             composable("single_play") {
                 SinglePlayScreen(navController)
@@ -110,28 +109,6 @@ class MainActivity : ComponentActivity() {
         ) {
             Button(
                 onClick = {
-                    if (currentScreen != "single_play") {
-                        navController.navigate("single_play") {
-                            popUpTo("single_play") { inclusive = true }
-                        }
-                    }
-                },
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (currentScreen == "single_play") Color(0xFF141C25) else Color.White, // 클릭 여부에 따라 배경색 설정
-                    contentColor = if (currentScreen == "single_play") Color.White else Color(0xFF141C25) // 클릭 여부에 따라 텍스트 색상 설정
-                ),
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp)
-                    .padding(end = 4.dp),
-                border = BorderStroke(1.dp, Color.LightGray)
-            ) {
-                Text("연습하기")
-            }
-
-            Button(
-                onClick = {
                     if (currentScreen != "multi_play") {
                         navController.navigate("multi_play") {
                             popUpTo("multi_play") { inclusive = true }
@@ -151,6 +128,29 @@ class MainActivity : ComponentActivity() {
             ) {
                 Text("게임하기")
             }
+
+            Button(
+                onClick = {
+                    if (currentScreen != "single_play") {
+                        navController.navigate("single_play") {
+                            popUpTo("single_play") { inclusive = true }
+                        }
+                    }
+                },
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = if (currentScreen == "single_play") Color(0xFF141C25) else Color.White, // 클릭 여부에 따라 배경색 설정
+                    contentColor = if (currentScreen == "single_play") Color.White else Color(0xFF141C25) // 클릭 여부에 따라 텍스트 색상 설정
+                ),
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp)
+                    .padding(end = 4.dp),
+                border = BorderStroke(1.dp, Color.LightGray)
+            ) {
+                Text("혼자하기")
+            }
+
         }
     }
 

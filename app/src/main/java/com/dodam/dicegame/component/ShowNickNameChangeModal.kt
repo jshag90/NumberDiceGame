@@ -32,7 +32,7 @@ fun showNicknameChangeModal(
     }
 
     val dialog = AlertDialog.Builder(context)
-        .setMessage("닉네임이 이미 존재합니다.\n새로운 닉네임을 입력해주세요.")
+        .setMessage("입장하려는 방에 닉네임이 이미 존재합니다.\n새로운 닉네임을 입력해주세요.")
         .setCancelable(false)
         .setView(container)
         .setPositiveButton("변경") { _, _ ->

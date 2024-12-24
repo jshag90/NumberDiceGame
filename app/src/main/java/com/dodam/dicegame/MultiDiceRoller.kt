@@ -3,6 +3,7 @@ package com.dodam.dicegame
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -111,6 +112,7 @@ fun MultiDiceRoller(
     var isSelfStop by remember { mutableStateOf(false) }
     var isRoomMasterFlag by remember { mutableStateOf(isRoomMaster) }
 
+
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
@@ -144,6 +146,15 @@ fun MultiDiceRoller(
             client.sendMessage(Gson().toJson(getRoomsCountMessageVO))
 
             webSocketClient = client
+        }
+    }
+
+    val playerNickname by remember {mutableStateOf(userNickname)}
+
+    if(playerNickname != userNickname){
+        webSocketClient?.let { client ->
+            val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom") //방 입장
+            client.sendMessage(Gson().toJson(joinRoomMessageVO))
         }
     }
 
@@ -216,8 +227,8 @@ fun MultiDiceRoller(
                 }
                 navController.popBackStack()
             }) {
-                androidx.compose.material3.Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
                     contentDescription = "뒤로가기",
                     tint = Color.Black
                 )
@@ -463,7 +474,10 @@ fun MultiDiceRoller(
                         },
                         scoreResultsDtoList = scoreResultsDtoListState.value,
                         currentUserNickName = userNickname,
-                        webSocketClient = it
+                        webSocketClient = it,
+                        roomId = roomId,
+                        userNickname = userNickname,
+                        context = context
                     )
                 }
             }

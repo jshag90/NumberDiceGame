@@ -20,8 +20,7 @@ import okhttp3.Request
 // 방 참여 API
 fun joinSecretRoomWithOkHttpSync(
     roomJoinInfo: RoomJoinVO, context: Context,
-    navController: NavController,
-    roomPlayerDto: RoomPlayerDto
+    navController: NavController
 ): RoomPlayerDto? {
     val url = "$serverUrl/room/secret/join"
     val jsonBody = toJson(roomJoinInfo, RoomJoinVO::class.java)

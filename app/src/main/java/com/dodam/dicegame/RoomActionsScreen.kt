@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -199,8 +197,7 @@ fun RoomActionsScreen(
                         val roomPlayerDto = joinSecretRoomWithOkHttpSync(
                             RoomJoinVO(roomId, entryCode, nickName),
                             context,
-                            navController,
-                            RoomPlayerDto(0, 0, 0, 0, 0, "", "", "","")
+                            navController
                         )
 
                         withContext(Dispatchers.Main) {
@@ -244,12 +241,13 @@ fun RoomActionsScreen(
                             if (roomPlayerDto != null) {
                                 navController.navigate(
                                     "game_room/${roomPlayerDto.targetNumber}" +
-                                                  "/${roomPlayerDto.diceCount}/true/-1" +
-                                                  "/${roomPlayerDto.nickName}" +
-                                                  "/${roomPlayerDto.maxPlayer}" +
-                                                  "/${roomPlayerDto.roomId}"+
-                                                  "/false"
+                                            "/${roomPlayerDto.diceCount}/true/-1" +
+                                            "/${roomPlayerDto.nickName}" +
+                                            "/${roomPlayerDto.maxPlayer}" +
+                                            "/${roomPlayerDto.roomId}" +
+                                            "/false"
                                 )
+
                             } else {
                                 Log.e("공개방 입장", "Failed to 공개방 입장. roomId is null.")
                             }

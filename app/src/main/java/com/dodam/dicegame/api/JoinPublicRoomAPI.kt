@@ -11,10 +11,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.Request
 
-fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navController: NavController): RoomPlayerDto? {
+fun joinPublicRoomWithOkHttpSync(
+    nickName: String,
+    context: Context,
+    navController: NavController
+): RoomPlayerDto? {
     val url = "$serverUrl/room/public/join/nick-name=${nickName}"
 
-    val request = Request.Builder().url(url).get().addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()
+    val request = Request.Builder().url(url).get()
+        .addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()
 
     val responseBody = executeRequest(request)
     if (responseBody == null) {
@@ -42,7 +47,14 @@ fun joinPublicRoomWithOkHttpSync(nickName: String, context: Context,navControlle
 
     if (returnCodeVO.returnCode == -5) {
         CoroutineScope(Dispatchers.Main).launch {
-            returnCodeVO.data?.let { showNicknameChangeModal(context, it.playerId, navController,  returnCodeVO.data) }
+            returnCodeVO.data?.let {
+                showNicknameChangeModal(
+                    context,
+                    it.playerId,
+                    navController,
+                    returnCodeVO.data
+                )
+            }
         }
         return returnCodeVO.data
     }
