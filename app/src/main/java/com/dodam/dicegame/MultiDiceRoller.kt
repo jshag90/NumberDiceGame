@@ -149,13 +149,14 @@ fun MultiDiceRoller(
         }
     }
 
-    val playerNickname by remember {mutableStateOf(userNickname)}
+    var playerNickname by remember {mutableStateOf(userNickname)}
 
     if(playerNickname != userNickname){
         webSocketClient?.let { client ->
             val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom") //방 입장
             client.sendMessage(Gson().toJson(joinRoomMessageVO))
         }
+        playerNickname = userNickname
     }
 
     val showGameScoreResultsModal = remember { mutableStateOf(false) }
