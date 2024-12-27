@@ -63,7 +63,7 @@ class WebSocketClient(private val context: Context) {
                     val message = responseMessageVO.message
                     onIsAllDoneRoundPlay(message)
                     if(message == "end"){
-                        showToast("모든 사용자가 STOP을 선택했습니다. 게임을 종료합니다.")
+                        showToast("게임을 종료합니다.")
                     }
 
                 }
