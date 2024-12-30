@@ -33,6 +33,9 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val uuid = UUIDManager.getOrCreateUUID(this)
+
         setContent {
             DiceGameTheme {
                 Surface(
