@@ -3,6 +3,7 @@ package com.dodam.dicegame
 import com.dodam.dicegame.dto.RoomPlayerDto
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -55,13 +57,26 @@ fun RoomActionsScreen(
     var showCreateRoomModal by remember { mutableStateOf(false) }
     var showSecretRoomModal by remember { mutableStateOf(false) }
     var showPublicRoomModal by remember { mutableStateOf(false) }
+    val uuid = UUIDManager.getOrCreateUUID(context)
+
+    Text(
+        text = "ID : ${uuid.substring(0, 8)}",
+        fontSize = 17.sp,
+        fontWeight = FontWeight.Normal,
+        color = Color.Black,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 17.dp),
+        textAlign = TextAlign.End
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp), // 전체 화면 패딩 설정
-        verticalArrangement = Arrangement.spacedBy(30.dp) // 버튼 간 마진 10dp
+            .padding(17.dp), // 전체 화면 패딩 설정
+        verticalArrangement = Arrangement.spacedBy(12.dp) // 버튼 간 마진 10dp
     ) {
+
         Button(
             onClick = { showCreateRoomModal = true }, // Show modal on button click
             modifier = Modifier
@@ -121,7 +136,32 @@ fun RoomActionsScreen(
         }
 
         Button(
-            onClick = { showPublicRoomModal = true },
+            onClick = {
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    val roomPlayerDto = joinPublicRoomWithOkHttpSync(
+                        uuid,
+                        context,
+                        navController
+                    )
+
+                    withContext(Dispatchers.Main) {
+                        if (roomPlayerDto != null) {
+                            navController.navigate(
+                                "game_room/${roomPlayerDto.targetNumber}" +
+                                        "/${roomPlayerDto.diceCount}/true/-1" +
+                                        "/${roomPlayerDto.maxPlayer}" +
+                                        "/${roomPlayerDto.roomId}" +
+                                        "/false"
+                            )
+
+                        } else {
+                            Log.e("공개방 입장", "Failed to 공개방 입장. roomId is null.")
+                        }
+                    }
+                }
+
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -154,7 +194,7 @@ fun RoomActionsScreen(
     if (showCreateRoomModal) {
         CreateRoomModal(
             onDismiss = { showCreateRoomModal = false },
-            onConfirm = { targetNumber, numDice, isPublic, entryCode, userNickname, maxPlayers ->
+            onConfirm = { targetNumber, numDice, isPublic, entryCode, maxPlayers ->
                 showCreateRoomModal = false
                 val isPublicText = if (isPublic) "true" else "false"
                 val entryCodeText = entryCode.ifBlank { "-1" }
@@ -165,7 +205,7 @@ fun RoomActionsScreen(
                     diceCount = numDice,
                     roomType = if (isPublic) RoomType.PUBLIC else RoomType.SECRET,
                     entryCode = if (isPublic) "" else entryCode,
-                    nickName = userNickname
+                    uuid =  UUIDManager.getOrCreateUUID(context)
                 )
 
                 // 비동기 방식으로 roomId를 받아오고 나서 navigate 호출
@@ -174,7 +214,7 @@ fun RoomActionsScreen(
                     withContext(Dispatchers.Main) {
                         if (roomId != null) {
                             navController.navigate(
-                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$userNickname/$maxPlayers/${roomId}/true"
+                                "game_room/$targetNumber/$numDice/$isPublicText/$entryCodeText/$maxPlayers/${roomId}/true"
                             )
                         } else {
                             Log.e("방만들기", "Failed to 방만들기. roomId is null.")
@@ -189,13 +229,13 @@ fun RoomActionsScreen(
     if (showSecretRoomModal) {
         SecretRoomModal(
             onDismiss = { showSecretRoomModal = false },
-            onConfirm = { roomId, entryCode, nickName ->
-                if (roomId > 0L && entryCode.isNotBlank() && nickName.isNotBlank()) {
+            onConfirm = { roomId, entryCode ->
+                if (roomId > 0L && entryCode.isNotBlank()) {
                     showSecretRoomModal = false
 
                     CoroutineScope(Dispatchers.IO).launch {
                         val roomPlayerDto = joinSecretRoomWithOkHttpSync(
-                            RoomJoinVO(roomId, entryCode, nickName),
+                            RoomJoinVO(roomId, entryCode, uuid),
                             context,
                             navController
                         )
@@ -205,7 +245,6 @@ fun RoomActionsScreen(
                                 navController.navigate(
                                     "game_room/${roomPlayerDto.targetNumber}" +
                                             "/${roomPlayerDto.diceCount}/false/${roomPlayerDto.entryCode}" +
-                                            "/${roomPlayerDto.nickName}" +
                                             "/${roomPlayerDto.maxPlayer}" +
                                             "/${roomPlayerDto.roomId}"+
                                             "/false"
@@ -222,43 +261,5 @@ fun RoomActionsScreen(
             }
         )
     }
-
-    if (showPublicRoomModal) {
-        PublicRoomModal(
-            onDismiss = { showPublicRoomModal = false },
-            onConfirm = { nickName ->
-                if (nickName.isNotBlank()) {
-                    showPublicRoomModal = false
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val roomPlayerDto = joinPublicRoomWithOkHttpSync(
-                            nickName,
-                            context,
-                            navController
-                        )
-
-                        withContext(Dispatchers.Main) {
-                            if (roomPlayerDto != null) {
-                                navController.navigate(
-                                    "game_room/${roomPlayerDto.targetNumber}" +
-                                            "/${roomPlayerDto.diceCount}/true/-1" +
-                                            "/${roomPlayerDto.nickName}" +
-                                            "/${roomPlayerDto.maxPlayer}" +
-                                            "/${roomPlayerDto.roomId}" +
-                                            "/false"
-                                )
-
-                            } else {
-                                Log.e("공개방 입장", "Failed to 공개방 입장. roomId is null.")
-                            }
-                        }
-                    }
-
-                    onPrivateRoomClick()
-                }
-            }
-        )
-    }
-
 
 }

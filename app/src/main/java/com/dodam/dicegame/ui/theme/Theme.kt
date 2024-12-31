@@ -39,26 +39,15 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun DiceGameTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> LightColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = LightColorScheme // 항상 라이트 모드 색상 스킴 사용
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = 0xFF141C25.toInt()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true // 라이트 모드용 상태바 텍스트 색상
         }
     }
 

@@ -33,14 +33,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CreateRoomModal(
     onDismiss: () -> Unit,
-    onConfirm: (goalNumber: Int, diceCount: Int, isPublic: Boolean, entryCode: String, nickname: String, maxPlayers: Int) -> Unit
+    onConfirm: (goalNumber: Int, diceCount: Int, isPublic: Boolean, entryCode: String, maxPlayers: Int) -> Unit
 ) {
     val context = LocalContext.current // Context를 가져옴
     var goalNumber by remember { mutableStateOf("21") } // 기본값 21
     var diceCount by remember { mutableStateOf("1") } // 기본값 1개
     var isPublic by remember { mutableStateOf(true) } // 기본값 공개
     var entryCode by remember { mutableStateOf("") }
-    var nickname by remember { mutableStateOf("") } // 닉네임 추가
     var maxPlayers by remember { mutableStateOf(5) } // 기본값 2명
     var expanded by remember { mutableStateOf(false) } // DropdownMenu 상태
 
@@ -48,7 +47,6 @@ fun CreateRoomModal(
         onDismissRequest = { onDismiss() },
         confirmButton = {
             TextButton(onClick = {
-                val userNickname = nickname.ifBlank { "익명" } // 빈 닉네임일 경우 기본값 설정
                 val targetNumber = goalNumber.toIntOrNull() ?: 21
                 val numDice = diceCount.toIntOrNull() ?: 1
                 val code = if (isPublic) "-1" else entryCode // 공개일 때 기본값 적용
@@ -58,7 +56,7 @@ fun CreateRoomModal(
                     return@TextButton
                 }
 
-                onConfirm(targetNumber, numDice, isPublic, code, userNickname, maxPlayers)
+                onConfirm(targetNumber, numDice, isPublic, code, maxPlayers)
             }) {
                 Text("만들기")
             }
@@ -71,12 +69,6 @@ fun CreateRoomModal(
         title = { Text("방 만들기") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(
-                    value = nickname,
-                    onValueChange = { nickname = it },
-                    label = { Text("닉네임") },
-                    modifier = Modifier.fillMaxWidth()
-                )
                 OutlinedTextField(
                     value = goalNumber,
                     onValueChange = { goalNumber = it },

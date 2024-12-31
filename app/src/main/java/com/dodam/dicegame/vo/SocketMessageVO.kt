@@ -6,7 +6,7 @@ interface SocketMessageVO {
 
 data class JoinRoomMessageVO(
     val roomId: String,
-    val nickName: String,
+    val uuid: String,
     override val action: String
 ) : SocketMessageVO
 

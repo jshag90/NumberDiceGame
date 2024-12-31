@@ -10,5 +10,5 @@ data class RoomInfoVO(
     val diceCount: Int,
     val roomType: RoomType,
     val entryCode: String?,
-    val nickName: String
+    val uuid: String
 )

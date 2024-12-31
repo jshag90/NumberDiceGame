@@ -71,7 +71,6 @@ fun MultiDiceRoller(
     numDice: String,
     isPublic: String,
     entryCode: String,
-    userNickname: String,
     maxPlayer: String,
     roomId: String,
     isRoomMaster: String,
@@ -112,12 +111,13 @@ fun MultiDiceRoller(
     var isSelfStop by remember { mutableStateOf(false) }
     var isRoomMasterFlag by remember { mutableStateOf(isRoomMaster) }
 
+    val uuid = UUIDManager.getOrCreateUUID(context)
 
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
             val getRoomsCountMessageVO = GetRoomsCountMessageVO(roomId, "getRoomsCount") //입장 인원
-            val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom") //방 입장
+            val joinRoomMessageVO = JoinRoomMessageVO(roomId, uuid,"joinRoom") //방 입장
             client.connect(socketServerUrl,
                 { roomCount: Int ->
                     memberCount = roomCount
@@ -135,7 +135,7 @@ fun MultiDiceRoller(
                     }
                 },
                 { isChangeRoomMaster: ResponseMessageVO ->
-                    if (isChangeRoomMaster.subMessage == "changeRoomMaster" && isChangeRoomMaster.message == userNickname) {
+                    if (isChangeRoomMaster.subMessage == "changeRoomMaster" && isChangeRoomMaster.message == uuid) {
                         isRoomMasterFlag = "true"
                     }
                     client.sendMessage(Gson().toJson(getRoomsCountMessageVO)) //입장 인원 갱신
@@ -147,16 +147,6 @@ fun MultiDiceRoller(
 
             webSocketClient = client
         }
-    }
-
-    var playerNickname by remember {mutableStateOf(userNickname)}
-
-    if(playerNickname != userNickname){
-        webSocketClient?.let { client ->
-            val joinRoomMessageVO = JoinRoomMessageVO(roomId, userNickname, "joinRoom") //방 입장
-            client.sendMessage(Gson().toJson(joinRoomMessageVO))
-        }
-        playerNickname = userNickname
     }
 
     val showGameScoreResultsModal = remember { mutableStateOf(false) }
@@ -178,7 +168,7 @@ fun MultiDiceRoller(
     if (isGameStarted && isGameEnd && memberCount < 2) {
         sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
         saveScoreWithOkHttpAsync(
-            SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+            SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
             context
         ) {}
 
@@ -194,12 +184,12 @@ fun MultiDiceRoller(
     BackHandler {
         sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
         saveScoreWithOkHttpAsync(
-            SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+            SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
             context
         ) {
-            sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
+            sendLeaveRoomMessageWebSocket(webSocketClient, roomId, uuid)
             webSocketClient?.closeConnection()
-            deletePlayerOkHttpSync(roomId, userNickname, context)
+            deletePlayerOkHttpSync(roomId, uuid, context)
         }
         navController.popBackStack()
     }
@@ -219,12 +209,12 @@ fun MultiDiceRoller(
             IconButton(onClick = {
                 sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
                 saveScoreWithOkHttpAsync(
-                    SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+                    SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
                     context
                 ) {
-                    sendLeaveRoomMessageWebSocket(webSocketClient, roomId, userNickname)
+                    sendLeaveRoomMessageWebSocket(webSocketClient, roomId, uuid)
                     webSocketClient?.closeConnection()
-                    deletePlayerOkHttpSync(roomId, userNickname, context)
+                    deletePlayerOkHttpSync(roomId, uuid, context)
                 }
                 navController.popBackStack()
             }) {
@@ -238,7 +228,7 @@ fun MultiDiceRoller(
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
-                text = "$userNickname 님",
+                text = "${uuid.substring(0, 8)} 님",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -419,7 +409,7 @@ fun MultiDiceRoller(
                     sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
 
                     saveScoreWithOkHttpAsync(
-                        SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+                        SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
                         context
                     ) {}
 
@@ -450,7 +440,7 @@ fun MultiDiceRoller(
                     sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
 
                     saveScoreWithOkHttpAsync(
-                        SaveScoreVO(roomId.toLong(), userNickname, rollCount, rolledSum),
+                        SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
                         context
                     ) {}
 
@@ -474,10 +464,10 @@ fun MultiDiceRoller(
                             showGameScoreResultsModal.value = false // 모달 닫기
                         },
                         scoreResultsDtoList = scoreResultsDtoListState.value,
-                        currentUserNickName = userNickname,
+                        currentUserNickName = uuid.substring(0, 8),
                         webSocketClient = it,
                         roomId = roomId,
-                        userNickname = userNickname,
+                        userNickname = uuid.substring(0, 8),
                         context = context
                     )
                 }

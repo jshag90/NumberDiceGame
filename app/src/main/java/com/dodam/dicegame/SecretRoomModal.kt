@@ -20,11 +20,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SecretRoomModal(
     onDismiss: () -> Unit,
-    onConfirm: (roomId: Long, entryCode: String, nickName: String) -> Unit
+    onConfirm: (roomId: Long, entryCode: String) -> Unit
 ) {
     var roomNumber by remember { mutableStateOf("") }
     var entryCode by remember { mutableStateOf("") }
-    var nickName by remember { mutableStateOf("") }
     val context = LocalContext.current // Toast를 표시하기 위해 Context 필요
 
     AlertDialog(
@@ -39,11 +38,8 @@ fun SecretRoomModal(
                         entryCode.isBlank() -> {
                             Toast.makeText(context, "입장 코드를 입력해주세요.", Toast.LENGTH_SHORT).show()
                         }
-                        nickName.isBlank() -> {
-                            Toast.makeText(context, "닉네임을 입력해주세요.", Toast.LENGTH_SHORT).show()
-                        }
                         else -> {
-                            onConfirm(roomNumber.toLong(), entryCode, nickName)
+                            onConfirm(roomNumber.toLong(), entryCode)
                         }
                     }
                 }
@@ -69,12 +65,6 @@ fun SecretRoomModal(
                     value = entryCode,
                     onValueChange = { entryCode = it },
                     label = { Text("입장 코드") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = nickName,
-                    onValueChange = { nickName = it },
-                    label = { Text("닉네임") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

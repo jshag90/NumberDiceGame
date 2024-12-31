@@ -12,11 +12,11 @@ import kotlinx.coroutines.launch
 import okhttp3.Request
 
 fun joinPublicRoomWithOkHttpSync(
-    nickName: String,
+    uuid: String,
     context: Context,
     navController: NavController
 ): RoomPlayerDto? {
-    val url = "$serverUrl/room/public/join/nick-name=${nickName}"
+    val url = "$serverUrl/room/public/join/uuid=${uuid}"
 
     val request = Request.Builder().url(url).get()
         .addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()
