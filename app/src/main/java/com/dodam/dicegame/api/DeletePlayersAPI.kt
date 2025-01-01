@@ -10,11 +10,11 @@ import okhttp3.Request
 
 fun deletePlayerOkHttpSync(
     roomId: String,
-    nickName: String,
+    uuid: String,
     context: Context
 ) {
     CoroutineScope(Dispatchers.IO).launch {
-        val url = "$serverUrl/player/delete/in-room/${roomId}/${nickName}"
+        val url = "$serverUrl/player/delete/in-room/${roomId}/${uuid}"
 
         val request = Request.Builder().url(url).delete()
             .addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()

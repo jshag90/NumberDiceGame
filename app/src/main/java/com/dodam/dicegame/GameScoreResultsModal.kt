@@ -33,10 +33,10 @@ fun GameScoreResultsModal(
     navController: NavController,
     onConfirm: (scoreResultsDtoList: List<ScoreResultsDto>) -> Unit,
     scoreResultsDtoList: List<ScoreResultsDto>,
-    currentUserNickName: String,
+    currentUuid: String,
     webSocketClient: WebSocketClient,
     roomId: String,
-    userNickname: String,
+    uuid: String,
     context: Context
 ) {
     AlertDialog(
@@ -46,7 +46,7 @@ fun GameScoreResultsModal(
                 onClick = {
                     onConfirm(scoreResultsDtoList)
                     webSocketClient?.closeConnection()
-                    deletePlayerOkHttpSync(roomId, userNickname, context)
+                    deletePlayerOkHttpSync(roomId, uuid, context)
                     navController.popBackStack()
                 }
             ) {
@@ -90,7 +90,7 @@ fun GameScoreResultsModal(
                         textAlign = TextAlign.Center // 가운데 정렬
                     )
                     Text(
-                        text = "닉네임",
+                        text = "ID",
                         modifier = Modifier.weight(2f),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center // 가운데 정렬
@@ -135,20 +135,20 @@ fun GameScoreResultsModal(
                             }
                             Text(
                                 text = scoreResult.rank.toString(),
-                                fontWeight = if (scoreResult.nickName == currentUserNickName) FontWeight.Bold else FontWeight.Normal,
+                                fontWeight = if (scoreResult.uuid == currentUuid) FontWeight.Bold else FontWeight.Normal,
                                 textAlign = TextAlign.Center // 가운데 정렬
                             )
                         }
                         Text(
-                            text = scoreResult.nickName,
+                            text = scoreResult.uuid.substring(0,8),
                             modifier = Modifier.weight(2f),
-                            fontWeight = if (scoreResult.nickName == currentUserNickName) FontWeight.Bold else FontWeight.Normal,
+                            fontWeight = if (scoreResult.uuid == currentUuid) FontWeight.Bold else FontWeight.Normal,
                             textAlign = TextAlign.Center // 가운데 정렬
                         )
                         Text(
                             text = scoreResult.score.toString(),
                             modifier = Modifier.weight(1f),
-                            fontWeight = if (scoreResult.nickName == currentUserNickName) FontWeight.Bold else FontWeight.Normal,
+                            fontWeight = if (scoreResult.uuid == currentUuid) FontWeight.Bold else FontWeight.Normal,
                             textAlign = TextAlign.Center // 가운데 정렬
                         )
                     }

@@ -3,7 +3,6 @@ package com.dodam.dicegame
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -464,10 +463,10 @@ fun MultiDiceRoller(
                             showGameScoreResultsModal.value = false // 모달 닫기
                         },
                         scoreResultsDtoList = scoreResultsDtoListState.value,
-                        currentUserNickName = uuid.substring(0, 8),
+                        currentUuid = uuid,
                         webSocketClient = it,
                         roomId = roomId,
-                        userNickname = uuid.substring(0, 8),
+                        uuid = uuid,
                         context = context
                     )
                 }
