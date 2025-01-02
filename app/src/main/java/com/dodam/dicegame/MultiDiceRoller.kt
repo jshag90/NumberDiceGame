@@ -288,6 +288,12 @@ fun MultiDiceRoller(
                         rolledSum += diceValues.sum()
                         showGifList = List(parsedNumDice) { false }
                         isRolling = false
+
+                        saveScoreWithOkHttpAsync(
+                            SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
+                            context
+                        ) {}
+
                     }
                     showGifList = List(parsedNumDice) { true }
                     GifImageList(showGifList)
@@ -378,7 +384,6 @@ fun MultiDiceRoller(
                         isRolling = true
                         rollCount++
                     }
-
                     sendPlayGameMessageWebSocket(webSocketClient, roomId, "Y")
 
                 },
@@ -494,10 +499,10 @@ private fun sendPlayGameMessageWebSocket(
 private fun sendLeaveRoomMessageWebSocket(
     webSocketClient: WebSocketClient?,
     roomId: String,
-    nickName: String
+    uuid: String
 ) {
     webSocketClient?.let { client ->
-        val playGameMessageVO = LeaveRoomMessageVO(roomId, nickName, "leaveRoom")
+        val playGameMessageVO = LeaveRoomMessageVO(roomId, uuid, "leaveRoom")
         client.sendMessage(Gson().toJson(playGameMessageVO))
     }
 }

@@ -28,7 +28,7 @@ data class PlayGameMessageVO(
 
 data class LeaveRoomMessageVO(
     val roomId: String,
-    val nickName:String,
+    val uuid:String,
     override val action: String
 ) : SocketMessageVO
 

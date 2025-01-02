@@ -69,14 +69,12 @@ class WebSocketClient(private val context: Context) {
                 }
                 "leaveRoom" ->{
                     if(responseMessageVO.subMessage=="changeRoomMaster"){
-                        showToast(responseMessageVO.message+"님으로 방장이 변경되었습니다.")
+                        showToast(responseMessageVO.message.substring(0,8)+"님으로 방장이 변경되었습니다.")
                     }else{
-                        showToast(responseMessageVO.message+"님이 퇴장하였습니다.")
+                        showToast(responseMessageVO.message.substring(0,8)+"님이 퇴장하였습니다.")
                     }
                     onIsChangeRoomMaster(responseMessageVO)
                 }
-
-
 
             }
         }
@@ -98,6 +96,8 @@ class WebSocketClient(private val context: Context) {
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             super.onFailure(webSocket, t, response)
             showToast("WebSocket 오류: ${t.message}")
+            Log.d("WebSocket", "sendMessage: $t.message")
+
         }
 
         private var toast: Toast? = null
