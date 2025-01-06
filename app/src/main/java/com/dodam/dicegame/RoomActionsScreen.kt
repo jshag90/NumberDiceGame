@@ -1,9 +1,7 @@
 package com.dodam.dicegame
 
-import com.dodam.dicegame.dto.RoomPlayerDto
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,11 +14,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,10 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.dodam.dicegame.api.createRoomWithOkHttpSync
+import com.dodam.dicegame.api.getPlayerUuidWithOkHttpAsync
+import com.dodam.dicegame.api.getRankingUuidWithOkHttpAsync
+import com.dodam.dicegame.api.getRankingWithOkHttpAsync
 import com.dodam.dicegame.vo.RoomInfoVO
 import com.dodam.dicegame.vo.RoomJoinVO
 import com.dodam.dicegame.vo.RoomType
 import com.dodam.dicegame.api.joinPublicRoomWithOkHttpSync
+import com.dodam.dicegame.dto.PlayerDto
+import com.dodam.dicegame.dto.RankingDto
 import joinSecretRoomWithOkHttpSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,11 +61,23 @@ fun RoomActionsScreen(
     val context = LocalContext.current
     var showCreateRoomModal by remember { mutableStateOf(false) }
     var showSecretRoomModal by remember { mutableStateOf(false) }
-    var showPublicRoomModal by remember { mutableStateOf(false) }
+    var showTotalRankingModal by remember { mutableStateOf(false) }
+    var rankingDtoList: List<RankingDto>? by remember { mutableStateOf(null) }
+    var totalScore by remember { mutableStateOf(0) } // totalScore 변수 추가
     val uuid = UUIDManager.getOrCreateUUID(context)
 
+    LaunchedEffect(showCreateRoomModal, showSecretRoomModal, showTotalRankingModal, rankingDtoList) {
+        CoroutineScope(Dispatchers.IO).launch {
+            getPlayerUuidWithOkHttpAsync(context){playerDto: PlayerDto? ->
+                if (playerDto != null) {
+                    totalScore = playerDto.totalScore
+                }
+            }
+        }
+    }
+
     Text(
-        text = "ID : ${uuid.substring(0, 8)}",
+        text = "나의 ID : ${uuid.substring(0, 8)}, 승점 : $totalScore",
         fontSize = 17.sp,
         fontWeight = FontWeight.Normal,
         color = Color.Black,
@@ -70,6 +87,18 @@ fun RoomActionsScreen(
         textAlign = TextAlign.End
     )
 
+    Text(
+        text = "uuid : $uuid",
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Normal,
+        color = Color.LightGray,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 17.dp),
+        textAlign = TextAlign.End
+    )
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,13 +107,45 @@ fun RoomActionsScreen(
     ) {
 
         Button(
-            onClick = { showCreateRoomModal = true }, // Show modal on button click
+            onClick = {
+                getRankingWithOkHttpAsync(context) { rankingList -> rankingDtoList = rankingList }
+                showTotalRankingModal = true
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(120.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
+                .height(30.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
-            shape = RoundedCornerShape(24.dp) // 버튼 모서리를 매우 둥글게 설정
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = "랭킹보기",
+                    tint = Color.White,
+                    modifier = Modifier.size(60.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "랭킹보기",
+                    color = Color.White,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Button(
+            onClick = { showCreateRoomModal = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .height(30.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
+            shape = RoundedCornerShape(24.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -94,13 +155,13 @@ fun RoomActionsScreen(
                     imageVector = Icons.Filled.Add,
                     contentDescription = "방 만들기",
                     tint = Color.White,
-                    modifier = Modifier.size(120.dp) // 아이콘 크기 크게 설정
+                    modifier = Modifier.size(60.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // 아이콘과 텍스트 사이 간격
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "방만들기",
                     color = Color.White,
-                    fontSize = 26.sp, // 글씨 크기를 작게 조정
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -111,25 +172,25 @@ fun RoomActionsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(120.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
+                .height(30.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
-            shape = RoundedCornerShape(24.dp) // 버튼 모서리를 둥글게 설정
+            shape = RoundedCornerShape(24.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Lock, // 비공개방 아이콘
+                    imageVector = Icons.Filled.Lock,
                     contentDescription = "비공개 방 입장",
                     tint = Color.White,
-                    modifier = Modifier.size(120.dp) // 아이콘 크기 크게 설정
+                    modifier = Modifier.size(60.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // 아이콘과 텍스트 사이 간격
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "비공개방",
                     color = Color.White,
-                    fontSize = 26.sp, // 글씨 크기를 작게 조정
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -137,8 +198,13 @@ fun RoomActionsScreen(
 
         Button(
             onClick = {
-
                 CoroutineScope(Dispatchers.IO).launch {
+                    getPlayerUuidWithOkHttpAsync(context) { playerDto: PlayerDto? ->
+                        if (playerDto != null) {
+                            totalScore = playerDto.totalScore
+                        }
+                    }
+
                     val roomPlayerDto = joinPublicRoomWithOkHttpSync(
                         uuid,
                         context,
@@ -165,7 +231,7 @@ fun RoomActionsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(120.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
+                .height(30.dp), // 버튼 높이를 키워서 아이콘을 크게 보여줄 수 있는 공간 확보
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141C25)),
             shape = RoundedCornerShape(24.dp) // 버튼 모서리를 둥글게 설정
         ) {
@@ -174,22 +240,32 @@ fun RoomActionsScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Face, // 공개방 아이콘
+                    imageVector = Icons.Filled.Face,
                     contentDescription = "공개 방 입장",
                     tint = Color.White,
-                    modifier = Modifier.size(120.dp) // 아이콘 크기 크게 설정
+                    modifier = Modifier.size(60.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // 아이콘과 텍스트 사이 간격
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "공개방",
                     color = Color.White,
-                    fontSize = 26.sp, // 글씨 크기를 작게 조정
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
 
     }
+
+    if(showTotalRankingModal){
+        rankingDtoList?.let {
+            TotalRankingModal(onDismiss = {showTotalRankingModal = false},
+                onConfirm = {},
+                rankingList = it
+            )
+        }
+    }
+
 
     if (showCreateRoomModal) {
         CreateRoomModal(
