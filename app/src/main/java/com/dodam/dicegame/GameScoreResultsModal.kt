@@ -101,6 +101,12 @@ fun GameScoreResultsModal(
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center // 가운데 정렬
                     )
+                    Text(
+                        text = "승점",
+                        modifier = Modifier.weight(1f),
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center // 가운데 정렬
+                    )
                 }
                 // 결과 리스트
                 scoreResultsDtoList.forEach { scoreResult ->
@@ -147,6 +153,12 @@ fun GameScoreResultsModal(
                         )
                         Text(
                             text = scoreResult.score.toString(),
+                            modifier = Modifier.weight(1f),
+                            fontWeight = if (scoreResult.uuid == currentUuid) FontWeight.Bold else FontWeight.Normal,
+                            textAlign = TextAlign.Center // 가운데 정렬
+                        )
+                        Text(
+                            text = if(scoreResult.plusTotalScore > 0) "+"+scoreResult.plusTotalScore.toString() else scoreResult.plusTotalScore.toString(),
                             modifier = Modifier.weight(1f),
                             fontWeight = if (scoreResult.uuid == currentUuid) FontWeight.Bold else FontWeight.Normal,
                             textAlign = TextAlign.Center // 가운데 정렬

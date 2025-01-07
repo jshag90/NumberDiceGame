@@ -58,16 +58,8 @@ fun TotalRankingModal(
     AlertDialog(
         onDismissRequest = { onDismiss() },
         confirmButton = {
-            TextButton(
-                onClick = {
-                }
-            ) {
-                Text("확인")
-            }
-        },
-        dismissButton = {
             TextButton(onClick = { onDismiss() }) {
-                Text("취소")
+                Text("확인")
             }
         },
         title = { Text("랭킹보기") },
