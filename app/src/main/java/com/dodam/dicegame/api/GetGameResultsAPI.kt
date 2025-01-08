@@ -9,8 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.Request
 
-fun getScoreResultsOkHttpSync(roomId: String, context: Context): List<ScoreResultsDto>? {
-    val url = "$serverUrl/score/results/room-id=${roomId}"
+fun getScoreResultsOkHttpSync(roomId: String, uuid: String, context: Context): List<ScoreResultsDto>? {
+    val url = "$serverUrl/score/results/room-id=${roomId}/uuid=${uuid}"
 
     val request = Request.Builder().url(url).get()
         .addHeader(HttpHeaders.ACCEPT, HttpHeadersValue.ACCEPT_VALUE).build()

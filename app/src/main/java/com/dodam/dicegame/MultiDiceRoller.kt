@@ -154,7 +154,7 @@ fun MultiDiceRoller(
     LaunchedEffect(isGameEnd) {
         if (isGameEnd) {
             val scoreResultsDtoList =
-                withContext(Dispatchers.IO) { getScoreResultsOkHttpSync(roomId, context) }
+                withContext(Dispatchers.IO) { getScoreResultsOkHttpSync(roomId, uuid, context) }
 
             scoreResultsDtoList?.let {
                 scoreResultsDtoListState.value = it
