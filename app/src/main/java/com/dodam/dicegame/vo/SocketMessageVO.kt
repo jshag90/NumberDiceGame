@@ -37,3 +37,9 @@ data class ResponseMessageVO(
     val subMessage:String,
     override val action: String
 ) : SocketMessageVO
+
+data class CreateGameRoomMessageVO(
+    val roomId: String,
+    val uuid: String,
+    override val action: String
+) : SocketMessageVO

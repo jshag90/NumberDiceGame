@@ -49,6 +49,7 @@ import com.dodam.dicegame.api.socketServerUrl
 import com.dodam.dicegame.component.displayDiceBlackJackTip
 import com.dodam.dicegame.component.displayDiceRollResult
 import com.dodam.dicegame.dto.ScoreResultsDto
+import com.dodam.dicegame.vo.CreateGameRoomMessageVO
 import com.dodam.dicegame.vo.GetRoomsCountMessageVO
 import com.dodam.dicegame.vo.JoinRoomMessageVO
 import com.dodam.dicegame.vo.LeaveRoomMessageVO
@@ -115,6 +116,7 @@ fun MultiDiceRoller(
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
+            val createGameRoomMessageVO = CreateGameRoomMessageVO(roomId, uuid, "createGameRoom")
             val getRoomsCountMessageVO = GetRoomsCountMessageVO(roomId, "getRoomsCount") //입장 인원
             val joinRoomMessageVO = JoinRoomMessageVO(roomId, uuid,"joinRoom") //방 입장
             client.connect(socketServerUrl,
@@ -143,6 +145,9 @@ fun MultiDiceRoller(
 
             client.sendMessage(Gson().toJson(joinRoomMessageVO))
             client.sendMessage(Gson().toJson(getRoomsCountMessageVO))
+            if(isRoomMaster=="true"&&memberCount<2) {
+                client.sendMessage(Gson().toJson(createGameRoomMessageVO))
+            }
 
             webSocketClient = client
         }
@@ -188,7 +193,6 @@ fun MultiDiceRoller(
         ) {
             sendLeaveRoomMessageWebSocket(webSocketClient, roomId, uuid)
             webSocketClient?.closeConnection()
-            deletePlayerOkHttpSync(roomId, uuid, context)
         }
         navController.popBackStack()
     }
@@ -213,7 +217,6 @@ fun MultiDiceRoller(
                 ) {
                     sendLeaveRoomMessageWebSocket(webSocketClient, roomId, uuid)
                     webSocketClient?.closeConnection()
-                    deletePlayerOkHttpSync(roomId, uuid, context)
                 }
                 navController.popBackStack()
             }) {

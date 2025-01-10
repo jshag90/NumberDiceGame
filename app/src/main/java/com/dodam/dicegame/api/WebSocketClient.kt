@@ -54,6 +54,7 @@ class WebSocketClient(private val context: Context) {
             val responseMessageVO = Gson().fromJson(text, ResponseMessageVO::class.java)
             when (responseMessageVO.action) {
                 "joinRoom" -> showToast(responseMessageVO.message)
+                "createGameRoom" -> showToast(responseMessageVO.message)
                 "getRoomsCount" -> onRoomCountReceived(responseMessageVO.message.toInt())
                 "startGame" -> {
                     onIsGameStartReceived(true)
