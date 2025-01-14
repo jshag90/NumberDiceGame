@@ -86,7 +86,6 @@ fun MultiDiceRoller(
     var showGifList by remember { mutableStateOf(List(parsedNumDice) { false }) }
     var isRolling by remember { mutableStateOf(false) }
 
-    var isGameStarted by remember { mutableStateOf(false) }
     var tipMessage by remember { mutableStateOf("Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.") }
 
     //주사위 소리 재생
@@ -111,6 +110,30 @@ fun MultiDiceRoller(
     var isSelfStop by remember { mutableStateOf(false) }
     var isRoomMasterFlag by remember { mutableStateOf(isRoomMaster) }
 
+    var isGameStarted by remember { mutableStateOf(false) }
+    var isGameTimeout by remember { mutableStateOf(false) }
+    var timerValue by remember { mutableStateOf(30) }  // 30초로 초기화
+
+    fun startNewRound() {
+        timerValue = 30
+        isGameTimeout = false
+        isGameStarted = true
+    }
+
+    LaunchedEffect(isGameStarted) {
+        if (isGameStarted && isAllDoneRoundPlay && !isRolling && !isSelfStop) {
+            while (timerValue > 0) {
+                delay(1000) // 1초씩 대기
+                timerValue -= 1 // 1초씩 감소
+            }
+            if (timerValue == 0) {
+                isGameTimeout = true
+                isGameStarted = false
+                Toast.makeText(context, "30초 타임아웃! 게임 종료.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     val uuid = UUIDManager.getOrCreateUUID(context)
 
     LaunchedEffect(roomId) {
@@ -128,7 +151,10 @@ fun MultiDiceRoller(
                 },
                 { allDoneRoundPlay: String ->
                     when (allDoneRoundPlay) {
-                        "done" -> isAllDoneRoundPlay = true
+                        "done" -> {
+                            isAllDoneRoundPlay = true
+                            startNewRound()
+                            }
                         "end" -> {
                             isAllDoneRoundPlay = false
                             isGameEnd = true
@@ -183,7 +209,19 @@ fun MultiDiceRoller(
             .apply { show() }
     }
 
+    // 타임아웃이 발생했을 때 처리할 로직 추가
+    LaunchedEffect(isGameTimeout) {
+        if (isGameTimeout) {
+            isSelfStop = true
+            startNewRound()
+            sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
 
+            saveScoreWithOkHttpAsync(
+                SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
+                context
+            ) {}
+        }
+    }
 
     BackHandler {
         sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
@@ -244,7 +282,7 @@ fun MultiDiceRoller(
 
                 Text(
                     text = "방번호 : $roomId",
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -267,6 +305,13 @@ fun MultiDiceRoller(
                 Text(
                     text = "입장인원 : $memberCount",
                     fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black
+                )
+
+                Text(
+                    text = "목표숫자 : $parsedTargetNumber",
+                    fontSize = 25.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
@@ -329,6 +374,7 @@ fun MultiDiceRoller(
                             client.sendMessage(Gson().toJson(startGameMessageVO))
                         }
                         isRoomMasterFlag = "false"
+                        startNewRound()
                     },
                     modifier = Modifier
                         .width(200.dp)
@@ -361,18 +407,36 @@ fun MultiDiceRoller(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "라운드 ${rollCount + 1}",
-                    color = Color(0xFFFFEB3B),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                if (isGameStarted && !isGameTimeout && !isGameEnd && !isSelfStop && isAllDoneRoundPlay) {
+                    Text(
+                        text = "남은 시간: ${timerValue}초",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                if (isGameTimeout && !isGameEnd && !isSelfStop  && isAllDoneRoundPlay) {
+                    Text(
+                        text = "시간 초과!",
+                        color = Color.Red,
+                        fontSize = 20.sp
+                    )
+                }
+
             }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("목표 숫자: $parsedTargetNumber")
+                Text(
+                    text = "라운드 ${rollCount + 1}",
+                    color = Color(0xFFFFEB3B),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 20.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -382,7 +446,6 @@ fun MultiDiceRoller(
                 onClick = {
 
                     isAllDoneRoundPlay = false
-
                     if (!isRolling) {
                         isRolling = true
                         rollCount++
@@ -412,7 +475,6 @@ fun MultiDiceRoller(
                 onClick = {
 
                     isSelfStop = true
-
                     sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
 
                     saveScoreWithOkHttpAsync(
