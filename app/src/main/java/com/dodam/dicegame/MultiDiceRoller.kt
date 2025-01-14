@@ -76,6 +76,9 @@ fun MultiDiceRoller(
     isRoomMaster: String,
     navController: NavController
 ) {
+    val GAME_START_TIMEOUT = 600 //10분
+    val GAME_PLAY_TIMEOUT = 30 //30초
+
     var diceValues by remember { mutableStateOf(List(numDice.toIntOrNull() ?: 1) { 1 }) }
     var rolledSum by remember { mutableStateOf(0) }
     var rollCount by remember { mutableStateOf(0) }
@@ -112,10 +115,10 @@ fun MultiDiceRoller(
 
     var isGameStarted by remember { mutableStateOf(false) }
     var isGameTimeout by remember { mutableStateOf(false) }
-    var timerValue by remember { mutableStateOf(30) }  // 30초로 초기화
+    var timerValue by remember { mutableStateOf(GAME_PLAY_TIMEOUT) }
 
     fun startNewRound() {
-        timerValue = 30
+        timerValue = GAME_PLAY_TIMEOUT
         isGameTimeout = false
         isGameStarted = true
     }
@@ -129,7 +132,7 @@ fun MultiDiceRoller(
             if (timerValue == 0) {
                 isGameTimeout = true
                 isGameStarted = false
-                Toast.makeText(context, "30초 타임아웃! 게임 종료.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "${GAME_PLAY_TIMEOUT}초 타임아웃! 게임 종료.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -222,6 +225,33 @@ fun MultiDiceRoller(
             ) {}
         }
     }
+
+    var gameStartTimeout by remember { mutableStateOf(GAME_START_TIMEOUT) }
+    var isRoomTimeout by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isGameStarted, gameStartTimeout) {
+        if (!isGameStarted) {
+            while (gameStartTimeout > 0) {
+                delay(1000)
+                gameStartTimeout -= 1
+            }
+            if (gameStartTimeout == 0 && !isGameStarted) {
+                isRoomTimeout = true
+            }
+        } else {
+            gameStartTimeout = GAME_START_TIMEOUT
+        }
+    }
+
+    LaunchedEffect(isRoomTimeout) {
+        if (isRoomTimeout) {
+            sendLeaveRoomMessageWebSocket(webSocketClient, roomId, uuid)
+            webSocketClient?.closeConnection()
+            Toast.makeText(context, "게임이 5분 동안 시작되지 않아 방을 나갑니다.", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
+    }
+
 
     BackHandler {
         sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
