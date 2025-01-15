@@ -1,6 +1,7 @@
 package com.dodam.dicegame
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.media.MediaPlayer
 import android.os.Build
 import android.widget.Toast
@@ -42,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dodam.dicegame.api.WebSocketClient
-import com.dodam.dicegame.api.deletePlayerOkHttpSync
 import com.dodam.dicegame.api.getScoreResultsOkHttpSync
 import com.dodam.dicegame.api.saveScoreWithOkHttpAsync
 import com.dodam.dicegame.api.socketServerUrl
@@ -79,6 +79,9 @@ fun MultiDiceRoller(
     val GAME_START_TIMEOUT = 600 //10분
     val GAME_PLAY_TIMEOUT = 30 //30초
 
+    val context = LocalContext.current
+    val uuid = UUIDManager.getOrCreateUUID(context)
+
     var diceValues by remember { mutableStateOf(List(numDice.toIntOrNull() ?: 1) { 1 }) }
     var rolledSum by remember { mutableStateOf(0) }
     var rollCount by remember { mutableStateOf(0) }
@@ -87,23 +90,7 @@ fun MultiDiceRoller(
     val parsedNumDice = numDice.toIntOrNull() ?: 1
 
     var showGifList by remember { mutableStateOf(List(parsedNumDice) { false }) }
-    var isRolling by remember { mutableStateOf(false) }
-
     var tipMessage by remember { mutableStateOf("Tip. 목표 숫자에 도달할 때까지 주사위를 굴려주세요.") }
-
-    //주사위 소리 재생
-    val context = LocalContext.current
-    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-    LaunchedEffect(isRolling) {
-        if (isRolling) {
-            mediaPlayer?.release()
-            mediaPlayer = MediaPlayer.create(context, R.raw.dice_sound)
-            mediaPlayer?.start()
-            mediaPlayer?.setOnCompletionListener {
-                it.release()
-            }
-        }
-    }
 
     //현재 입장인원
     var memberCount by remember { mutableStateOf(0) }
@@ -116,6 +103,19 @@ fun MultiDiceRoller(
     var isGameStarted by remember { mutableStateOf(false) }
     var isGameTimeout by remember { mutableStateOf(false) }
     var timerValue by remember { mutableStateOf(GAME_PLAY_TIMEOUT) }
+
+    var isRolling by remember { mutableStateOf(false) }
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    LaunchedEffect(isRolling) {
+        if (isRolling) {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer.create(context, R.raw.dice_sound)
+            mediaPlayer?.start()
+            mediaPlayer?.setOnCompletionListener {
+                it.release()
+            }
+        }
+    }
 
     fun startNewRound() {
         timerValue = GAME_PLAY_TIMEOUT
@@ -132,19 +132,17 @@ fun MultiDiceRoller(
             if (timerValue == 0) {
                 isGameTimeout = true
                 isGameStarted = false
-                Toast.makeText(context, "${GAME_PLAY_TIMEOUT}초 타임아웃! 게임 종료.", Toast.LENGTH_SHORT).show()
+                showToast(context, "${GAME_PLAY_TIMEOUT}초 타임아웃! 게임 종료.")
             }
         }
     }
-
-    val uuid = UUIDManager.getOrCreateUUID(context)
 
     LaunchedEffect(roomId) {
         if (webSocketClient == null) {
             val client = WebSocketClient(context)
             val createGameRoomMessageVO = CreateGameRoomMessageVO(roomId, uuid, "createGameRoom")
             val getRoomsCountMessageVO = GetRoomsCountMessageVO(roomId, "getRoomsCount") //입장 인원
-            val joinRoomMessageVO = JoinRoomMessageVO(roomId, uuid,"joinRoom") //방 입장
+            val joinRoomMessageVO = JoinRoomMessageVO(roomId, uuid, "joinRoom") //방 입장
             client.connect(socketServerUrl,
                 { roomCount: Int ->
                     memberCount = roomCount
@@ -157,7 +155,8 @@ fun MultiDiceRoller(
                         "done" -> {
                             isAllDoneRoundPlay = true
                             startNewRound()
-                            }
+                        }
+
                         "end" -> {
                             isAllDoneRoundPlay = false
                             isGameEnd = true
@@ -174,7 +173,7 @@ fun MultiDiceRoller(
 
             client.sendMessage(Gson().toJson(joinRoomMessageVO))
             client.sendMessage(Gson().toJson(getRoomsCountMessageVO))
-            if(isRoomMaster=="true"&&memberCount<2) {
+            if (isRoomMaster == "true" && memberCount < 2) {
                 client.sendMessage(Gson().toJson(createGameRoomMessageVO))
             }
 
@@ -208,8 +207,7 @@ fun MultiDiceRoller(
         isSelfStop = true
         isGameStarted = false
 
-        Toast.makeText(context, "더 이상 게임을 진행할 플레이어가 존재하지 않습니다.", Toast.LENGTH_SHORT)
-            .apply { show() }
+        showToast(context, "더 이상 게임을 진행할 플레이어가 존재하지 않습니다.")
     }
 
     // 타임아웃이 발생했을 때 처리할 로직 추가
@@ -218,7 +216,6 @@ fun MultiDiceRoller(
             isSelfStop = true
             startNewRound()
             sendPlayGameMessageWebSocket(webSocketClient, roomId, "N")
-
             saveScoreWithOkHttpAsync(
                 SaveScoreVO(roomId.toLong(), uuid, rollCount, rolledSum),
                 context
@@ -247,7 +244,7 @@ fun MultiDiceRoller(
         if (isRoomTimeout) {
             sendLeaveRoomMessageWebSocket(webSocketClient, roomId, uuid)
             webSocketClient?.closeConnection()
-            Toast.makeText(context, "게임이 5분 동안 시작되지 않아 방을 나갑니다.", Toast.LENGTH_SHORT).show()
+            showToast(context, "게임이 5분 동안 시작되지 않아 방을 나갑니다.")
             navController.popBackStack()
         }
     }
@@ -394,8 +391,7 @@ fun MultiDiceRoller(
                 Button(
                     onClick = {
                         if (memberCount < 2) {
-                            Toast.makeText(context, "참가 인원이 최소 2명이 되어야 합니다.", Toast.LENGTH_SHORT)
-                                .apply { show() }
+                            showToast(context, "참가 인원이 최소 2명이 되어야 합니다.")
                             return@Button
                         }
 
@@ -447,7 +443,7 @@ fun MultiDiceRoller(
                     )
                 }
 
-                if (isGameTimeout && !isGameEnd && !isSelfStop  && isAllDoneRoundPlay) {
+                if (isGameTimeout && !isGameEnd && !isSelfStop && isAllDoneRoundPlay) {
                     Text(
                         text = "시간 초과!",
                         color = Color.Red,
@@ -559,9 +555,7 @@ fun MultiDiceRoller(
                 webSocketClient?.let {
                     GameScoreResultsModal(
                         navController,
-                        onConfirm = { results ->
-                            showGameScoreResultsModal.value = false // 모달 닫기
-                        },
+                        onConfirm = { showGameScoreResultsModal.value = false},
                         scoreResultsDtoList = scoreResultsDtoListState.value,
                         currentUuid = uuid,
                         webSocketClient = it,
@@ -575,6 +569,11 @@ fun MultiDiceRoller(
 
         }
     }
+}
+
+
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
 /**
