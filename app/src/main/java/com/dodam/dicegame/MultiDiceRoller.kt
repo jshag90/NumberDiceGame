@@ -185,7 +185,7 @@ fun MultiDiceRoller(
     val scoreResultsDtoListState = remember { mutableStateOf<List<ScoreResultsDto>>(emptyList()) }
 
     LaunchedEffect(isGameEnd) {
-        if (isGameEnd) {
+        if (isGameEnd&&isGameStarted) {
             val scoreResultsDtoList =
                 withContext(Dispatchers.IO) { getScoreResultsOkHttpSync(roomId, uuid, context) }
 
