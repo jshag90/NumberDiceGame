@@ -1,5 +1,6 @@
 package com.dodam.dicegame
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,12 +24,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dodam.dicegame.ui.theme.DiceGameTheme
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -47,8 +56,15 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                        val navController = rememberNavController()
-                        AppNavigation(navController)
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            val navController = rememberNavController()
+                            AppNavigation(navController)
+
+                        }
+
+                        // 하단에 고정된 Footer(광고)
+                        Footer()
                     }
                 }
             }
@@ -185,4 +201,45 @@ class MainActivity : ComponentActivity() {
     }
 
 
+}
+
+@Composable
+fun Footer() {
+    val adHeightDp = AdSize.BANNER.getHeight(context = LocalContext.current) // AdSize 높이 계산
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(adHeightDp), // 광고 높이 설정
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        AdViewComponent()
+    }
+
+}
+
+@Composable
+fun AdSize.getHeight(context: Context): Dp {
+    val pixels = this.getHeightInPixels(context) // 픽셀 높이 가져오기
+    return with(LocalDensity.current) { pixels.toDp() } // dp로 변환
+}
+
+@Composable
+fun AdViewComponent() {
+    val context = LocalContext.current
+    val adView = remember { AdView(context) }
+    val adUnitId = "ca-app-pub-6669682457787065/6669133554"
+    //TEST Ad unit ID : ca-app-pub-3940256099942544/6300978111
+
+    LaunchedEffect(Unit) {
+        adView.setAdSize(AdSize.BANNER)
+        adView.adUnitId = adUnitId
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+    }
+
+    AndroidView(
+        factory = { adView },
+        modifier = Modifier
+            .fillMaxWidth()
+    )
 }
