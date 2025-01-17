@@ -310,7 +310,7 @@ fun MultiDiceRoller(
                 Text(
                     text = "방번호 : $roomId",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
                 if (isPublic == "false") {
@@ -338,8 +338,8 @@ fun MultiDiceRoller(
 
                 Text(
                     text = "목표숫자 : $parsedTargetNumber",
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.Normal,
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
             }
