@@ -37,13 +37,13 @@ import com.dodam.dicegame.ui.theme.DiceGameTheme
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val uuid = UUIDManager.getOrCreateUUID(this)
+        MobileAds.initialize(this)
 
         setContent {
             DiceGameTheme {
