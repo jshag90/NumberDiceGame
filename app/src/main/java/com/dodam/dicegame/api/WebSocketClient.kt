@@ -82,7 +82,7 @@ class WebSocketClient(private val context: Context) {
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
             super.onMessage(webSocket, bytes)
-            showToast("수신 데이터 (ByteString): $bytes")
+            //showToast("수신 데이터 (ByteString): $bytes")
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
@@ -96,7 +96,7 @@ class WebSocketClient(private val context: Context) {
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             super.onFailure(webSocket, t, response)
-            showToast("WebSocket 오류: ${t.message}")
+            //showToast("WebSocket 오류: ${t.message}")
             Log.d("WebSocket", "sendMessage: $t.message")
 
         }
