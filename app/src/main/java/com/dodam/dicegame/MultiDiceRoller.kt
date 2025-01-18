@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
@@ -120,7 +121,6 @@ fun MultiDiceRoller(
     fun startNewRound() {
         timerValue = GAME_PLAY_TIMEOUT
         isGameTimeout = false
-        isGameStarted = true
     }
 
     LaunchedEffect(isGameStarted) {
@@ -166,6 +166,7 @@ fun MultiDiceRoller(
                 { isChangeRoomMaster: ResponseMessageVO ->
                     if (isChangeRoomMaster.subMessage == "changeRoomMaster" && isChangeRoomMaster.message == uuid) {
                         isRoomMasterFlag = "true"
+                        isGameStarted = false
                     }
                     client.sendMessage(Gson().toJson(getRoomsCountMessageVO)) //입장 인원 갱신
                 }
@@ -174,6 +175,7 @@ fun MultiDiceRoller(
             client.sendMessage(Gson().toJson(joinRoomMessageVO))
             client.sendMessage(Gson().toJson(getRoomsCountMessageVO))
             if (isRoomMaster == "true" && memberCount < 2) {
+                isGameStarted = false
                 client.sendMessage(Gson().toJson(createGameRoomMessageVO))
             }
 
@@ -292,7 +294,7 @@ fun MultiDiceRoller(
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = "${uuid.substring(0, 8)} 님",
@@ -304,18 +306,18 @@ fun MultiDiceRoller(
             Spacer(modifier = Modifier.weight(1f))
 
             Column(
-                horizontalAlignment = Alignment.End
+                horizontalAlignment = Alignment.Start
             ) {
 
                 Text(
-                    text = "방번호 : $roomId",
+                    text = "- 방번호 : $roomId",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
                 if (isPublic == "false") {
                     Text(
-                        text = "입장코드 : $entryCode",
+                        text = "- 입장코드 : $entryCode",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                         color = Color.Black
@@ -323,25 +325,27 @@ fun MultiDiceRoller(
                 }
 
                 Text(
-                    text = "최대인원 : $maxPlayer",
+                    text = "- 최대인원 : $maxPlayer",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
 
                 Text(
-                    text = "입장인원 : $memberCount",
+                    text = "- 입장인원 : $memberCount",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black
                 )
 
                 Text(
-                    text = "목표숫자 : $parsedTargetNumber",
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    text = "- 라운드 : ${rollCount + 1}",
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Normal,
+                    style = MaterialTheme.typography.bodyLarge
                 )
+
             }
         }
 
@@ -438,7 +442,7 @@ fun MultiDiceRoller(
                         text = "남은 시간: ${timerValue}초",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = Color.Blue,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
@@ -457,12 +461,13 @@ fun MultiDiceRoller(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "라운드 ${rollCount + 1}",
-                    color = Color(0xFFFFEB3B),
+                    text = "목표숫자 : $parsedTargetNumber",
+                    color = Color.DarkGray,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 20.sp
                 )
+
             }
 
             Spacer(modifier = Modifier.height(20.dp))
